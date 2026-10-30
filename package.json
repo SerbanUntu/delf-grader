@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "convex dev --start 'next dev'",
+    "dev": "convex dev --start \"next dev\"",
     "typecheck": "tsc --noEmit",
     "build": "pnpm typecheck && next build",
     "start": "next start",
     "lint": "pnpm typecheck && biome check",
-    "format": "biome check --write"
+    "format": "biome check --write",
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.22",
@@ -66,6 +67,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.3",
-    "@typescript/native": "npm:typescript@^7.0.2"
-  }
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "vitest": "^5.0.5"
+  },
+  "packageManager": "pnpm@12.16.1"
 }

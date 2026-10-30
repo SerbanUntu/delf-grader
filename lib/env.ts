@@ -3,8 +3,6 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    CONVEX_DEPLOYMENT: z.string().min(1),
-    CLERK_FRONTEND_API_URL: z.url(),
     CLERK_SECRET_KEY: z.string().startsWith("sk_"),
   },
   client: {

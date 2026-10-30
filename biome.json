@@ -11,7 +11,8 @@
       "!.agents/skills",
       "!.claude/skills",
       "!convex/_generated",
-      "!components/ui"
+      "!components/ui",
+      "!pnpm-lock.yaml"
     ]
   },
   "formatter": {
