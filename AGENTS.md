@@ -2,4 +2,4 @@ DELF Grader is a Next.js 16 + Convex application that allows French teachers to 
 
 For each user (teacher), there is a list of classes, where each class has a list of sessions (an instance of the whole class taking a practice exam, consisting of multiple student submissions).
 
-Refer to @docs/REQUIREMENTS.md for the requirements of the project, @docs/STYLE_GUIDE.md for how to contribute (must read before making changes), and @docs/TECH_STACK.md for more details regarding the technologies used.
+Read @docs/IMPLEMENTATION_PLAN.md for a comprehensive high-level overview of the project architecture and of what future implementation work will require, so you keep extensibility and maintainability in mind. Refer to @docs/REQUIREMENTS.md for the requirements of the project, @docs/STYLE_GUIDE.md for how to contribute (must read before making changes), and @docs/TECH_STACK.md for more details regarding the technologies used.
