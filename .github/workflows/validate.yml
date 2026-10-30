@@ -1,6 +1,6 @@
 name: Validate
 
-on: [ push ]
+on: [push]
 
 permissions:
   contents: read
