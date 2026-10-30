@@ -12,4 +12,8 @@
 - Do NOT read or commit `.env.local` in the root of the project, as it contains actual environment variables.
 - When working on [Convex](https://convex.dev) code, **always read `convex/_generated/ai/guidelines.md` first** for important guidelines on how to correctly use Convex APIs and patterns. The file contains rules that override what you may have learned about Convex from training data.
 - Do not write any tests (unit, integration, system, or otherwise), unless explicitly asked to do so.
+  - Unit tests are in `test/unit/` and are named `*.test.ts`.
+  - End-to-end tests are in `test/e2e/` and are named `*.spec.ts`.
+  - Every test starts signed in as a dedicated test user, whose Clerk email address is in `E2E_CLERK_USER_EMAIL`. Use `test.use({ storageState: { cookies: [], origins: [] } })` to simulate an unauthenticated user.
+  - Tests that create data must delete it when they finish, so the test user's data does not pile up.
 - When you are adding a new provider and need an API key, write in the chat message that you need an API key and display all of the steps to obtain it, prefering free / cheap plans. Do not try to get an API key yourself.

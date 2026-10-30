@@ -13,15 +13,16 @@
 - Linting and formatting: Biome 2.6
 - Package manager: pnpm (lockfile v9)
 - Deployment: Vercel
-    - The production instance is available at https://delf-grader.vercel.app/.
+  - The production instance is available at https://delf-grader.vercel.app/.
     - The Next.js server is running on http://localhost:3000/.
     - Both the production deployment with the production Convex instance and local development with the development Convex instance share the same development Clerk instance so I don't need to purchase a dedicated domain.
 - Transcriber model: Gemini 3.8 Flash
 - Grader model: Claude Opus 5.5
 - Redaction: done entirely in the browser before anything is uploaded
-    - PDF pages are turned into images with pdf.js.
+  - PDF pages are turned into images with pdf.js.
     - Black rectangles are drawn on a canvas and burned into the pixels, then each page is re-encoded as a JPEG.
     - Unredacted images are kept only in the browser's IndexedDB until the redacted version is saved.
 - Student IDs: HMAC-SHA-256 through the browser's Web Crypto API, with a secret key that never leaves the teacher's browsers
 - Local helper scripts: just (Justfile)
 - Unit Testing: Vitest 5.0
+- End-to-end Testing: Playwright 1.64 (Chromium only)
