@@ -17,3 +17,4 @@
   - Every test starts signed in as a dedicated test user, whose Clerk email address is in `E2E_CLERK_USER_EMAIL`. Use `test.use({ storageState: { cookies: [], origins: [] } })` to simulate an unauthenticated user.
   - Tests that create data must delete it when they finish, so the test user's data does not pile up.
 - When you are adding a new provider and need an API key, write in the chat message that you need an API key and display all of the steps to obtain it, prefering free / cheap plans. Do not try to get an API key yourself.
+- Do not update `AGENTS.md`, `CLAUDE.md` and `docs/*` unless explicitly asked. When updating them, keep the changes as small as possible, to not overwhelm the context of agents.
