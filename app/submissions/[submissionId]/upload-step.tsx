@@ -23,6 +23,7 @@ import { type LocalPage, saveLocalPages, usePageUrls } from "@/lib/local-pages";
 import { acceptedFileTypes, PageError, readPageFiles } from "@/lib/page-images";
 import { cn } from "@/lib/utils";
 import { StepHeading } from "./step-heading";
+import { RerunDescription } from "./step-status";
 
 /**
  * The upload step, where the teacher picks the images or the PDF of the student's answer.
@@ -188,15 +189,10 @@ export function UploadStep({
         onOpenChange={setIsConfirming}
         title="Replace the uploaded files?"
         description={
-          <>
-            <p>Saving the new files will re-run these steps:</p>
-            <ul className="mt-2 list-disc pl-6">
-              {stepsToRerun.map((step) => (
-                <li key={step}>{step}</li>
-              ))}
-            </ul>
-            <p className="mt-2">Their previous results will be replaced.</p>
-          </>
+          <RerunDescription
+            action="Saving the new files"
+            steps={stepsToRerun}
+          />
         }
         onConfirm={save}
       />

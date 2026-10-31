@@ -1,6 +1,7 @@
 import { defaultSessionName } from "../lib/format";
+import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
-import type { MutationCtx } from "./_generated/server";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Exam } from "./validation";
 
 /**
@@ -30,6 +31,79 @@ export function pickExam(source: Exam): Exam {
     rubricId: source.rubricId,
     question: source.question,
   };
+}
+
+/**
+ * Finds the exam date, rubric and question of a submission, which come from its session for session submissions.
+ *
+ * @param ctx The function context.
+ * @param submission The submission.
+ * @returns The exam fields, or null if the session no longer exists.
+ */
+export async function getExam(
+  ctx: QueryCtx,
+  submission: Doc<"submissions">,
+): Promise<Exam | null> {
+  if (submission.kind === "individual") {
+    return pickExam(submission);
+  }
+  const session = await ctx.db.get("sessions", submission.sessionId);
+  return session ? pickExam(session) : null;
+}
+
+/**
+ * Checks that a step is still running the same run, so the result of a run that was replaced is not saved.
+ *
+ * @param step The transcription or grading of a submission.
+ * @param startedAt When the run that wants to save its result started.
+ * @returns Whether the run is the current one.
+ */
+export function isCurrentRun(
+  step: Doc<"submissions">["transcription" | "grading"],
+  startedAt: number,
+): boolean {
+  return step?.status === "inProgress" && step.startedAt === startedAt;
+}
+
+/**
+ * Starts transcribing the saved pages of a submission in the background, which clears its grading.
+ *
+ * @param ctx The mutation context.
+ * @param submissionId The submission ID.
+ */
+export async function startTranscription(
+  ctx: MutationCtx,
+  submissionId: Id<"submissions">,
+) {
+  const startedAt = Date.now();
+  await ctx.db.patch("submissions", submissionId, {
+    transcription: { status: "inProgress", startedAt },
+    grading: undefined,
+  });
+  await ctx.scheduler.runAfter(0, internal.transcription.transcribe, {
+    submissionId,
+    startedAt,
+  });
+}
+
+/**
+ * Starts grading the transcription of a submission in the background.
+ *
+ * @param ctx The mutation context.
+ * @param submissionId The submission ID.
+ */
+export async function startGrading(
+  ctx: MutationCtx,
+  submissionId: Id<"submissions">,
+) {
+  const startedAt = Date.now();
+  await ctx.db.patch("submissions", submissionId, {
+    grading: { status: "inProgress", startedAt },
+  });
+  await ctx.scheduler.runAfter(0, internal.grading.grade, {
+    submissionId,
+    startedAt,
+  });
 }
 
 /**

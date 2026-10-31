@@ -11,8 +11,28 @@ export const rubrics = [oldB1, oldB2, newB1, newB2] as const;
 
 export type RubricId = (typeof rubrics)[number]["id"];
 
+export type CriterionId = (typeof rubrics)[number]["criteria"][number]["id"];
+
+export type AnomalyId = (typeof rubrics)[number]["anomalies"][number]["id"];
+
 export const rubricIdValidator = v.union(
   ...rubrics.map((rubric) => v.literal(rubric.id)),
+);
+
+const criterionIds = new Set<CriterionId>(
+  rubrics.flatMap((rubric) => rubric.criteria.map((criterion) => criterion.id)),
+);
+
+const anomalyIds = new Set<AnomalyId>(
+  rubrics.flatMap((rubric) => rubric.anomalies.map((anomaly) => anomaly.id)),
+);
+
+export const criterionIdValidator = v.union(
+  ...Array.from(criterionIds, (id) => v.literal(id)),
+);
+
+export const anomalyIdValidator = v.union(
+  ...Array.from(anomalyIds, (id) => v.literal(id)),
 );
 
 /**

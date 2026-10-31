@@ -9,10 +9,13 @@
  */
 
 import type * as access from "../access.js";
+import type * as ai from "../ai.js";
 import type * as classes from "../classes.js";
+import type * as grading from "../grading.js";
 import type * as model from "../model.js";
 import type * as sessions from "../sessions.js";
 import type * as submissions from "../submissions.js";
+import type * as transcription from "../transcription.js";
 import type * as validation from "../validation.js";
 
 import type {
@@ -23,10 +26,13 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   access: typeof access;
+  ai: typeof ai;
   classes: typeof classes;
+  grading: typeof grading;
   model: typeof model;
   sessions: typeof sessions;
   submissions: typeof submissions;
+  transcription: typeof transcription;
   validation: typeof validation;
 }>;
 

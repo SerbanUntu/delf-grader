@@ -11,6 +11,7 @@ import { SideBySide, SubmissionImages } from "@/components/submission-images";
 import { api } from "@/convex/_generated/api";
 import { formatDate } from "@/lib/format";
 import { useLocalPages } from "@/lib/local-pages";
+import { getRubric } from "@/lib/rubrics";
 import {
   getCurrentStep,
   getReachedSteps,
@@ -18,9 +19,10 @@ import {
   getStepsToRerun,
   type StepId,
 } from "@/lib/steps";
+import { GradingStep } from "./grading-step";
 import { RedactionStep } from "./redaction-step";
-import { StepHeading } from "./step-heading";
 import { StepList } from "./step-list";
+import { TranscriptionStep } from "./transcription-step";
 import { UploadStep } from "./upload-step";
 
 /**
@@ -117,16 +119,17 @@ export function SubmissionView({ submissionId }: { submissionId: string }) {
             )}
             {openStep === "transcription" && (
               <SideBySide images={images}>
-                <StepHeading title="Transcription">
-                  The transcribed text will appear here.
-                </StepHeading>
+                <TranscriptionStep
+                  submissionId={submission._id}
+                  transcription={submission.transcription}
+                  minimumWords={getRubric(exam.rubricId).minimumWords}
+                  stepsToRerun={getStepsToRerun(statuses, "transcription")}
+                />
               </SideBySide>
             )}
             {openStep === "grading" && (
               <SideBySide images={images}>
-                <StepHeading title="Grading">
-                  The grading result will appear here.
-                </StepHeading>
+                <GradingStep grading={submission.grading} />
               </SideBySide>
             )}
           </div>

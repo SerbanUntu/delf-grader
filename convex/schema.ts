@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { gradingResultValidator } from "../lib/grading";
 import { rubricIdValidator } from "../lib/rubrics";
 
 export const examFields = {
@@ -8,12 +9,40 @@ export const examFields = {
   question: v.string(),
 };
 
+const inProgressStep = v.object({
+  status: v.literal("inProgress"),
+  startedAt: v.number(),
+});
+
+const failedStep = v.object({
+  status: v.literal("failed"),
+  error: v.string(),
+});
+
 const submissionFields = {
   teacherId: v.string(),
   classId: v.id("classes"),
   name: v.string(),
   uploadedAt: v.optional(v.number()),
   pageIds: v.optional(v.array(v.id("_storage"))),
+  transcription: v.optional(
+    v.union(
+      inProgressStep,
+      v.object({
+        status: v.literal("done"),
+        text: v.string(),
+        wordCount: v.number(),
+      }),
+      failedStep,
+    ),
+  ),
+  grading: v.optional(
+    v.union(
+      inProgressStep,
+      v.object({ status: v.literal("done"), result: gradingResultValidator }),
+      failedStep,
+    ),
+  ),
 };
 
 export default defineSchema({

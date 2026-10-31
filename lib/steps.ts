@@ -32,8 +32,8 @@ export function getStepStatuses(
   return {
     upload: isUploaded ? "done" : "notStarted",
     redaction: isRedacted ? "done" : isUploaded ? "inProgress" : "notStarted",
-    transcription: "notStarted",
-    grading: "notStarted",
+    transcription: submission.transcription?.status ?? "notStarted",
+    grading: submission.grading?.status ?? "notStarted",
   };
 }
 

@@ -7,6 +7,7 @@ import {
   deletePages,
   deleteSubmission,
   pickExam,
+  startTranscription,
   withDisplayName,
 } from "./model";
 import { examFields } from "./schema";
@@ -178,6 +179,8 @@ export const saveUpload = mutation({
     await ctx.db.patch("submissions", submission._id, {
       uploadedAt: Date.now(),
       pageIds: undefined,
+      transcription: undefined,
+      grading: undefined,
     });
     return null;
   },
@@ -238,6 +241,7 @@ export const savePages = mutation({
     await ctx.db.patch("submissions", submission._id, {
       pageIds: args.pageIds,
     });
+    await startTranscription(ctx, submission._id);
     return null;
   },
 });
