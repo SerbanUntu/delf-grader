@@ -1,5 +1,5 @@
 import { defaultSessionName } from "../lib/format";
-import type { Doc } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
 import type { Exam } from "./validation";
 
@@ -33,16 +33,36 @@ export function pickExam(source: Exam): Exam {
 }
 
 /**
+ * Deletes stored page images.
+ *
+ * @param ctx The mutation context.
+ * @param pageIds The storage IDs of the images.
+ */
+export async function deletePages(
+  ctx: MutationCtx,
+  pageIds: Id<"_storage">[] | undefined,
+) {
+  for (const pageId of pageIds ?? []) {
+    if (await ctx.db.system.get("_storage", pageId)) {
+      await ctx.storage.delete(pageId);
+    }
+  }
+}
+
+/**
  * Deletes a submission with everything that belongs to it.
  *
  * @param ctx The mutation context.
  * @param submission The submission to delete.
+ * @returns The ID of the deleted submission.
  */
 export async function deleteSubmission(
   ctx: MutationCtx,
   submission: Doc<"submissions">,
-) {
+): Promise<Id<"submissions">> {
+  await deletePages(ctx, submission.pageIds);
   await ctx.db.delete("submissions", submission._id);
+  return submission._id;
 }
 
 /**
@@ -50,15 +70,18 @@ export async function deleteSubmission(
  *
  * @param ctx The mutation context.
  * @param session The session to delete.
+ * @returns The IDs of the deleted submissions.
  */
 export async function deleteSession(
   ctx: MutationCtx,
   session: Doc<"sessions">,
-) {
+): Promise<Id<"submissions">[]> {
+  const submissionIds: Id<"submissions">[] = [];
   for await (const submission of ctx.db
     .query("submissions")
     .withIndex("by_sessionId", (q) => q.eq("sessionId", session._id))) {
-    await deleteSubmission(ctx, submission);
+    submissionIds.push(await deleteSubmission(ctx, submission));
   }
   await ctx.db.delete("sessions", session._id);
+  return submissionIds;
 }

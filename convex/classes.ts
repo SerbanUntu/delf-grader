@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import {
   findOwned,
@@ -57,21 +58,22 @@ export const remove = mutation({
   args: { classId: v.id("classes") },
   handler: async (ctx, args) => {
     await requireOwned(ctx, "classes", args.classId);
+    const submissionIds: Id<"submissions">[] = [];
     for await (const session of ctx.db
       .query("sessions")
       .withIndex("by_classId_and_examDate", (q) =>
         q.eq("classId", args.classId),
       )) {
-      await deleteSession(ctx, session);
+      submissionIds.push(...(await deleteSession(ctx, session)));
     }
     for await (const submission of ctx.db
       .query("submissions")
       .withIndex("by_classId_and_kind_and_examDate", (q) =>
         q.eq("classId", args.classId).eq("kind", "individual"),
       )) {
-      await deleteSubmission(ctx, submission);
+      submissionIds.push(await deleteSubmission(ctx, submission));
     }
     await ctx.db.delete("classes", args.classId);
-    return null;
+    return submissionIds;
   },
 });

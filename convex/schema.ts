@@ -8,6 +8,14 @@ export const examFields = {
   question: v.string(),
 };
 
+const submissionFields = {
+  teacherId: v.string(),
+  classId: v.id("classes"),
+  name: v.string(),
+  uploadedAt: v.optional(v.number()),
+  pageIds: v.optional(v.array(v.id("_storage"))),
+};
+
 export default defineSchema({
   classes: defineTable({
     teacherId: v.string(),
@@ -25,16 +33,12 @@ export default defineSchema({
     v.union(
       v.object({
         kind: v.literal("session"),
-        teacherId: v.string(),
-        classId: v.id("classes"),
         sessionId: v.id("sessions"),
-        name: v.string(),
+        ...submissionFields,
       }),
       v.object({
         kind: v.literal("individual"),
-        teacherId: v.string(),
-        classId: v.id("classes"),
-        name: v.string(),
+        ...submissionFields,
         ...examFields,
       }),
     ),

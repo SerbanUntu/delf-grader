@@ -7,6 +7,8 @@ export const submissionNameHint = "Do not include student names";
 
 export const maxNameLength = 100;
 export const maxQuestionLength = 10000;
+export const maxPageCount = 10;
+export const maxUploadSize = 20 * 1024 * 1024;
 
 const isoDateFormat = "yyyy-MM-dd";
 

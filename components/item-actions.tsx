@@ -21,6 +21,7 @@ import {
   defaultSubmissionName,
   submissionNameHint,
 } from "@/lib/format";
+import { deleteLocalPages } from "@/lib/local-pages";
 
 type ItemActionsProps = {
   itemType: "class" | "session" | "submission";
@@ -111,11 +112,16 @@ export function ItemActions({
 
 function useDeleteAndLeave(redirectTo: string | undefined) {
   const router = useRouter();
-  return async (remove: () => Promise<unknown>) => {
+  return async (remove: () => Promise<string | string[]>) => {
     if (redirectTo) {
       router.replace(redirectTo);
     }
-    await remove();
+    const deletedSubmissionIds = await remove();
+    await deleteLocalPages(
+      Array.isArray(deletedSubmissionIds)
+        ? deletedSubmissionIds
+        : [deletedSubmissionIds],
+    ).catch(() => undefined);
   };
 }
 

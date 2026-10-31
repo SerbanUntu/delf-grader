@@ -92,7 +92,6 @@ export const remove = mutation({
   args: { sessionId: v.id("sessions") },
   handler: async (ctx, args) => {
     const session = await requireOwned(ctx, "sessions", args.sessionId);
-    await deleteSession(ctx, session);
-    return null;
+    return await deleteSession(ctx, session);
   },
 });

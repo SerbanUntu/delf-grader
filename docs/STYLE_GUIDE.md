@@ -8,7 +8,7 @@
 # Contributing
 
 - Do not stage or commit without explicitly being told so. When committing, never add "Co-Authored-By: Claude <noreply@anthropic.com>".
-- Run `just check` from a Unix-compatible shell before finishing a feature to ensure CI will pass.
+- Run `just format` and then `just check` from a Unix-compatible shell before finishing a feature to ensure CI will pass.
 - Do NOT read or commit `.env.local` in the root of the project, as it contains actual environment variables.
 - When working on [Convex](https://convex.dev) code, **always read `convex/_generated/ai/guidelines.md` first** for important guidelines on how to correctly use Convex APIs and patterns. The file contains rules that override what you may have learned about Convex from training data.
 - Do not write any tests (unit, integration, system, or otherwise), unless explicitly asked to do so.

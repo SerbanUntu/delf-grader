@@ -2,12 +2,26 @@
 
 import { useMutation, useQuery } from "convex/react";
 import Link from "next/link";
+import { useState } from "react";
 import { ExamDetails } from "@/components/exam-details";
 import { SubmissionActions } from "@/components/item-actions";
 import { type BreadcrumbEntry, PageHeader } from "@/components/page-header";
 import { MissingItem, PageTitle } from "@/components/page-title";
+import { SideBySide, SubmissionImages } from "@/components/submission-images";
 import { api } from "@/convex/_generated/api";
 import { formatDate } from "@/lib/format";
+import { useLocalPages } from "@/lib/local-pages";
+import {
+  getCurrentStep,
+  getReachedSteps,
+  getStepStatuses,
+  getStepsToRerun,
+  type StepId,
+} from "@/lib/steps";
+import { RedactionStep } from "./redaction-step";
+import { StepHeading } from "./step-heading";
+import { StepList } from "./step-list";
+import { UploadStep } from "./upload-step";
 
 /**
  * The page of a submission.
@@ -17,6 +31,8 @@ import { formatDate } from "@/lib/format";
 export function SubmissionView({ submissionId }: { submissionId: string }) {
   const data = useQuery(api.submissions.get, { submissionId });
   const updateExam = useMutation(api.submissions.updateExam);
+  const localPages = useLocalPages(submissionId);
+  const [chosenStep, setChosenStep] = useState<StepId>();
 
   if (data === null) {
     return (
@@ -33,7 +49,19 @@ export function SubmissionView({ submissionId }: { submissionId: string }) {
     return <PageHeader breadcrumbs={[{ label: "Classes", href: "/" }]} />;
   }
 
-  const { submission, schoolClass, session, exam } = data;
+  const { submission, schoolClass, session, exam, pages } = data;
+  const statuses = getStepStatuses(submission);
+  const reached = getReachedSteps(statuses);
+  const openStep =
+    chosenStep && reached[chosenStep] ? chosenStep : getCurrentStep(statuses);
+  const isUploaded = submission.uploadedAt !== undefined;
+  const images = (
+    <SubmissionImages
+      savedPages={pages}
+      localPages={localPages}
+      isUploaded={isUploaded}
+    />
+  );
   const classHref = `/classes/${schoolClass._id}`;
   const sessionHref = session ? `/sessions/${session._id}` : undefined;
   const breadcrumbs: BreadcrumbEntry[] = [
@@ -59,7 +87,52 @@ export function SubmissionView({ submissionId }: { submissionId: string }) {
           {formatDate(exam.examDate)}
         </PageTitle>
 
-        <div className="mt-6">
+        <div className="mt-8 grid items-start gap-8 lg:grid-cols-[15rem_minmax(0,1fr)]">
+          <aside className="lg:sticky lg:top-24">
+            <StepList
+              statuses={statuses}
+              reached={reached}
+              openStep={openStep}
+              onOpenStep={setChosenStep}
+            />
+          </aside>
+          <div className="min-w-0">
+            {openStep === "upload" && (
+              <UploadStep
+                submissionId={submission._id}
+                isUploaded={isUploaded}
+                isRedacted={submission.pageIds !== undefined}
+                localPages={localPages}
+                stepsToRerun={getStepsToRerun(statuses, "upload")}
+                onSaved={() => setChosenStep("redaction")}
+              />
+            )}
+            {openStep === "redaction" && (
+              <RedactionStep
+                submissionId={submission._id}
+                savedPages={pages}
+                localPages={localPages}
+                onSaved={() => setChosenStep("transcription")}
+              />
+            )}
+            {openStep === "transcription" && (
+              <SideBySide images={images}>
+                <StepHeading title="Transcription">
+                  The transcribed text will appear here.
+                </StepHeading>
+              </SideBySide>
+            )}
+            {openStep === "grading" && (
+              <SideBySide images={images}>
+                <StepHeading title="Grading">
+                  The grading result will appear here.
+                </StepHeading>
+              </SideBySide>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-12">
           {sessionHref ? (
             <ExamDetails
               exam={exam}

@@ -19,8 +19,8 @@
 - Transcriber model: Gemini 3.8 Flash
 - Grader model: Claude Opus 5.5
 - Redaction: done entirely in the browser before anything is uploaded
-  - PDF pages are turned into images with pdf.js.
-    - Black rectangles are drawn on a canvas and burned into the pixels, then each page is re-encoded as a JPEG.
+- PDF to image: pdf.js 6.4
+  - Black rectangles are drawn on a canvas and burned into the pixels, then each page is re-encoded as a JPEG.
     - Unredacted images are kept only in the browser's IndexedDB until the redacted version is saved.
 - Student IDs: HMAC-SHA-256 through the browser's Web Crypto API, with a secret key that never leaves the teacher's browsers
 - Local helper scripts: just (Justfile)

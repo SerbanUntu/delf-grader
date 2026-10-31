@@ -1,13 +1,30 @@
 import { ConvexError, v } from "convex/values";
-import { defaultSubmissionName } from "../lib/format";
-import { mutation, query } from "./_generated/server";
+import { defaultSubmissionName, maxPageCount } from "../lib/format";
+import type { Doc } from "./_generated/dataModel";
+import { mutation, type QueryCtx, query } from "./_generated/server";
 import { findOwned, requireOwned, requireTeacherId } from "./access";
-import { deleteSubmission, pickExam, withDisplayName } from "./model";
+import {
+  deletePages,
+  deleteSubmission,
+  pickExam,
+  withDisplayName,
+} from "./model";
 import { examFields } from "./schema";
 import { cleanExam, cleanName, listLimit } from "./validation";
 
 function cleanSubmissionName(name: string): string {
   return cleanName(name) || defaultSubmissionName;
+}
+
+async function getPages(ctx: QueryCtx, submission: Doc<"submissions">) {
+  const pages = [];
+  for (const pageId of submission.pageIds ?? []) {
+    const url = await ctx.storage.getUrl(pageId);
+    if (url) {
+      pages.push({ id: pageId, url });
+    }
+  }
+  return pages;
 }
 
 export const listBySession = query({
@@ -54,12 +71,14 @@ export const get = query({
     if (!schoolClass) {
       return null;
     }
+    const pages = await getPages(ctx, submission);
     if (submission.kind === "individual") {
       return {
         submission,
         schoolClass,
         session: null,
         exam: pickExam(submission),
+        pages,
       };
     }
     const session = await ctx.db.get("sessions", submission.sessionId);
@@ -71,6 +90,7 @@ export const get = query({
       schoolClass,
       session: withDisplayName(session, schoolClass.name),
       exam: pickExam(session),
+      pages,
     };
   },
 });
@@ -142,7 +162,82 @@ export const remove = mutation({
       "submissions",
       args.submissionId,
     );
-    await deleteSubmission(ctx, submission);
+    return await deleteSubmission(ctx, submission);
+  },
+});
+
+export const saveUpload = mutation({
+  args: { submissionId: v.id("submissions") },
+  handler: async (ctx, args) => {
+    const submission = await requireOwned(
+      ctx,
+      "submissions",
+      args.submissionId,
+    );
+    await deletePages(ctx, submission.pageIds);
+    await ctx.db.patch("submissions", submission._id, {
+      uploadedAt: Date.now(),
+      pageIds: undefined,
+    });
+    return null;
+  },
+});
+
+export const generateUploadUrls = mutation({
+  args: { submissionId: v.id("submissions"), count: v.number() },
+  handler: async (ctx, args) => {
+    await requireOwned(ctx, "submissions", args.submissionId);
+    if (!Number.isInteger(args.count) || args.count < 1) {
+      throw new ConvexError("There are no pages to save.");
+    }
+    if (args.count > maxPageCount) {
+      throw new ConvexError(
+        `A submission can have at most ${maxPageCount} pages.`,
+      );
+    }
+    const urls: string[] = [];
+    for (let index = 0; index < args.count; index++) {
+      urls.push(await ctx.storage.generateUploadUrl());
+    }
+    return urls;
+  },
+});
+
+export const savePages = mutation({
+  args: {
+    submissionId: v.id("submissions"),
+    pageIds: v.array(v.id("_storage")),
+  },
+  handler: async (ctx, args) => {
+    const submission = await requireOwned(
+      ctx,
+      "submissions",
+      args.submissionId,
+    );
+    if (submission.uploadedAt === undefined) {
+      throw new ConvexError("Upload the submission first.");
+    }
+    if (args.pageIds.length === 0) {
+      throw new ConvexError("There are no pages to save.");
+    }
+    if (args.pageIds.length > maxPageCount) {
+      throw new ConvexError(
+        `A submission can have at most ${maxPageCount} pages.`,
+      );
+    }
+    for (const pageId of args.pageIds) {
+      const file = await ctx.db.system.get("_storage", pageId);
+      if (file?.contentType !== "image/jpeg") {
+        throw new ConvexError("Every page must be saved as a JPEG image.");
+      }
+    }
+    await deletePages(
+      ctx,
+      submission.pageIds?.filter((pageId) => !args.pageIds.includes(pageId)),
+    );
+    await ctx.db.patch("submissions", submission._id, {
+      pageIds: args.pageIds,
+    });
     return null;
   },
 });

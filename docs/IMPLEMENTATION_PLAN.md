@@ -104,7 +104,7 @@ A submission goes through four steps:
    - The teacher draws black rectangles on each page, and can undo, delete rectangles and zoom.
    - Saving burns the rectangles into the pixels and re-encodes each page as a JPEG, so the hidden data is gone for good and metadata such as GPS location is removed.
    - Only after this step is saved are the images sent to Convex.
-   - Redaction is optional and is only a precaution. Most of the time the answer contains only handwritten text without personal information, and the teacher simply confirms and saves without drawing anything. When nothing has been drawn, the save dialog states that the images will be sent as they are.
+   - Redaction is optional and is only a precaution. Most of the time the answer contains only handwritten text without personal information, and the teacher simply saves without drawing anything. Saving asks for no confirmation, and when nothing has been drawn the button reads "Save (no redactions)".
 3. Transcription: starts automatically once the redacted images are saved. The transcribed text is then shown in an editable text area with an explicit "Save" button, so the teacher can fix transcription mistakes without changing anything by accident.
 4. Grading: starts automatically once transcription is done. A "Re-grade" button runs grading again on the same input and replaces the previous result.
 
