@@ -18,3 +18,4 @@
   - Tests that create data must delete it when they finish, so the test user's data does not pile up.
 - When you are adding a new provider and need an API key, write in the chat message that you need an API key and display all of the steps to obtain it, prefering free / cheap plans. Do not try to get an API key yourself.
 - Do not update `AGENTS.md`, `CLAUDE.md` and `docs/*` unless explicitly asked. When updating them, keep the changes as small as possible, to not overwhelm the context of agents.
+- Prefer technical names over domain names when they have a very clear technical meaning that makes onboarding on the codebase easier (e.g., user instead of teacher, ISO date instead of stored exam date).
