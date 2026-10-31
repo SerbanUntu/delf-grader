@@ -129,7 +129,15 @@ export function SubmissionView({ submissionId }: { submissionId: string }) {
             )}
             {openStep === "grading" && (
               <SideBySide images={images}>
-                <GradingStep grading={submission.grading} />
+                <GradingStep
+                  submissionId={submission._id}
+                  grading={submission.grading}
+                  wordCount={
+                    submission.transcription?.status === "done"
+                      ? submission.transcription.wordCount
+                      : null
+                  }
+                />
               </SideBySide>
             )}
           </div>

@@ -4,7 +4,7 @@ import {
   NoObjectGeneratedError,
   Output,
 } from "ai";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { formatNumber } from "../lib/format";
 import {
   buildGraderSchema,
@@ -21,9 +21,11 @@ import {
   internalAction,
   internalMutation,
   internalQuery,
+  mutation,
 } from "./_generated/server";
+import { requireOwned } from "./access";
 import { describeStepFailure, getGraderModel } from "./ai";
-import { getExam, isCurrentRun } from "./model";
+import { getExam, isCurrentRun, startGrading } from "./model";
 
 const maxAttempts = 3;
 
@@ -269,6 +271,27 @@ export const fail = internalMutation({
     await ctx.db.patch("submissions", submission._id, {
       grading: { status: "failed", error: args.error },
     });
+    return null;
+  },
+});
+
+export const regrade = mutation({
+  args: { submissionId: v.id("submissions") },
+  handler: async (ctx, args) => {
+    const submission = await requireOwned(
+      ctx,
+      "submissions",
+      args.submissionId,
+    );
+    if (submission.transcription?.status !== "done") {
+      throw new ConvexError(
+        "The submission can only be graded once the transcription is done.",
+      );
+    }
+    if (submission.grading?.status === "inProgress") {
+      throw new ConvexError("The submission is already being graded.");
+    }
+    await startGrading(ctx, submission._id);
     return null;
   },
 });
