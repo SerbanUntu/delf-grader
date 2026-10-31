@@ -8,6 +8,7 @@ import {
   type CriterionId,
   criterionIdValidator,
   type Rubric,
+  type RubricId,
   rubricIdValidator,
 } from "./rubrics";
 
@@ -39,6 +40,24 @@ type CriterionResult = GradingResult["criteria"][number];
  * An answer from the grader that cannot be turned into a result, with a message that is sent back to the grader.
  */
 export class GraderAnswerError extends Error {}
+
+type GradingInput = { rubricId: RubricId; question: string };
+
+/**
+ * Checks whether a change to an exam changes what the grader receives, which are the rubric and the question.
+ *
+ * @param before The exam before the change.
+ * @param after The exam after the change.
+ * @returns Whether submissions that were graded must be graded again.
+ */
+export function isGradingInputChanged(
+  before: GradingInput,
+  after: GradingInput,
+): boolean {
+  return (
+    before.rubricId !== after.rubricId || before.question !== after.question
+  );
+}
 
 /**
  * Lists the criteria graded by the grader, which are all criteria except the length criterion scored by code.

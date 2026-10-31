@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { defaultSubmissionName, maxPageCount } from "../lib/format";
+import { isGradingInputChanged } from "../lib/grading";
 import type { Doc } from "./_generated/dataModel";
 import { mutation, type QueryCtx, query } from "./_generated/server";
 import { findOwned, requireOwned, requireTeacherId } from "./access";
@@ -7,6 +8,7 @@ import {
   deletePages,
   deleteSubmission,
   pickExam,
+  restartGrading,
   startTranscription,
   withDisplayName,
 } from "./model";
@@ -150,7 +152,11 @@ export const updateExam = mutation({
         "The exam of a session is changed from the session page.",
       );
     }
-    await ctx.db.patch("submissions", args.submissionId, cleanExam(args));
+    const exam = cleanExam(args);
+    await ctx.db.patch("submissions", submission._id, exam);
+    if (isGradingInputChanged(submission, exam)) {
+      await restartGrading(ctx, submission);
+    }
     return null;
   },
 });

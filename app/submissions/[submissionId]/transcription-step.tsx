@@ -34,6 +34,8 @@ export function TranscriptionStep({
   minimumWords: number;
   stepsToRerun: string[];
 }) {
+  const retry = useMutation(api.transcription.retry);
+
   if (transcription?.status === "done") {
     return (
       <section className="grid gap-5">
@@ -62,7 +64,10 @@ export function TranscriptionStep({
         </StepInProgress>
       )}
       {transcription?.status === "failed" && (
-        <StepFailed error={transcription.error} />
+        <StepFailed
+          error={transcription.error}
+          onRetry={() => retry({ submissionId })}
+        />
       )}
       {transcription === undefined && (
         <p className="text-muted-foreground">

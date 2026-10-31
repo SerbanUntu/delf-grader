@@ -20,6 +20,7 @@ import {
   formatDate,
   submissionNameHint,
 } from "@/lib/format";
+import { isGradingInputChanged } from "@/lib/grading";
 
 /**
  * The page of a session, with its exam, its submissions and its analytics.
@@ -54,6 +55,8 @@ export function SessionView({ sessionId }: { sessionId: string }) {
 
   const { session, schoolClass } = data;
   const classHref = `/classes/${schoolClass._id}`;
+  const hasGradedSubmission =
+    submissions?.some((submission) => submission.grading !== undefined) ?? true;
 
   return (
     <>
@@ -87,6 +90,11 @@ export function SessionView({ sessionId }: { sessionId: string }) {
             }}
             onSave={(values) =>
               updateSession({ sessionId: session._id, ...values })
+            }
+            getSaveWarning={(values) =>
+              hasGradedSubmission && isGradingInputChanged(session, values)
+                ? "Changing the rubric or the exam question will re-grade all graded submissions in this session. Their previous results will be replaced."
+                : null
             }
           />
         </div>

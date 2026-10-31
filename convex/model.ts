@@ -107,6 +107,24 @@ export async function startGrading(
 }
 
 /**
+ * Grades a submission again if its grading has started, after the rubric or the question changed.
+ *
+ * @param ctx The mutation context.
+ * @param submission The submission.
+ */
+export async function restartGrading(
+  ctx: MutationCtx,
+  submission: Doc<"submissions">,
+) {
+  if (
+    submission.grading !== undefined &&
+    submission.transcription?.status === "done"
+  ) {
+    await startGrading(ctx, submission._id);
+  }
+}
+
+/**
  * Deletes stored page images.
  *
  * @param ctx The mutation context.

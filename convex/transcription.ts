@@ -14,7 +14,7 @@ import {
 } from "./_generated/server";
 import { requireOwned } from "./access";
 import { describeStepFailure, getTranscriberModel } from "./ai";
-import { isCurrentRun, startGrading } from "./model";
+import { isCurrentRun, startGrading, startTranscription } from "./model";
 
 const transcriberInstructions = `You transcribe handwritten answers to a DELF Production écrite exam. They are written in French by students who are learning French.
 
@@ -149,6 +149,22 @@ export const fail = internalMutation({
     await ctx.db.patch("submissions", submission._id, {
       transcription: { status: "failed", error: args.error },
     });
+    return null;
+  },
+});
+
+export const retry = mutation({
+  args: { submissionId: v.id("submissions") },
+  handler: async (ctx, args) => {
+    const submission = await requireOwned(
+      ctx,
+      "submissions",
+      args.submissionId,
+    );
+    if (submission.transcription?.status !== "failed") {
+      throw new ConvexError("Only a failed transcription can be retried.");
+    }
+    await startTranscription(ctx, submission._id);
     return null;
   },
 });

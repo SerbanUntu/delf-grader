@@ -1,7 +1,8 @@
 import { v } from "convex/values";
+import { isGradingInputChanged } from "../lib/grading";
 import { mutation, query } from "./_generated/server";
 import { findOwned, requireOwned, requireTeacherId } from "./access";
-import { deleteSession, withDisplayName } from "./model";
+import { deleteSession, restartGrading, withDisplayName } from "./model";
 import { examFields } from "./schema";
 import { cleanExam, cleanName, listLimit } from "./validation";
 
@@ -68,11 +69,19 @@ export const update = mutation({
     ...examFields,
   },
   handler: async (ctx, args) => {
-    await requireOwned(ctx, "sessions", args.sessionId);
-    await ctx.db.patch("sessions", args.sessionId, {
+    const session = await requireOwned(ctx, "sessions", args.sessionId);
+    const exam = cleanExam(args);
+    await ctx.db.patch("sessions", session._id, {
       name: cleanName(args.name) || undefined,
-      ...cleanExam(args),
+      ...exam,
     });
+    if (isGradingInputChanged(session, exam)) {
+      for await (const submission of ctx.db
+        .query("submissions")
+        .withIndex("by_sessionId", (q) => q.eq("sessionId", session._id))) {
+        await restartGrading(ctx, submission);
+      }
+    }
     return null;
   },
 });

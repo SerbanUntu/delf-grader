@@ -1,5 +1,10 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { type ReactNode, useState } from "react";
+import { FormError } from "@/components/form-error";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { getErrorMessage } from "@/lib/errors";
 
 /**
  * Shows that a step is running on the server.
@@ -22,16 +27,46 @@ export function StepInProgress({ children }: { children: ReactNode }) {
 }
 
 /**
- * Shows the error of a step that failed.
+ * Shows the error of a step that failed, with a "Retry" button.
  *
  * @param error The error message.
+ * @param onRetry Called when the teacher clicks "Retry". The error is shown if it fails.
  */
-export function StepFailed({ error }: { error: string }) {
+export function StepFailed({
+  error,
+  onRetry,
+}: {
+  error: string;
+  onRetry: () => Promise<unknown>;
+}) {
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [retryError, setRetryError] = useState<string>();
+
+  async function retry() {
+    setRetryError(undefined);
+    setIsRetrying(true);
+    try {
+      await onRetry();
+    } catch (caught) {
+      setRetryError(getErrorMessage(caught));
+    } finally {
+      setIsRetrying(false);
+    }
+  }
+
   return (
-    <Alert variant="destructive" role="alert">
-      <AlertTitle className="text-base font-semibold">Failed</AlertTitle>
-      <AlertDescription className="text-base">{error}</AlertDescription>
-    </Alert>
+    <div className="grid gap-3">
+      <Alert variant="destructive" role="alert">
+        <AlertTitle className="text-base font-semibold">Failed</AlertTitle>
+        <AlertDescription className="text-base">{error}</AlertDescription>
+      </Alert>
+      <FormError message={retryError} />
+      <div>
+        <Button disabled={isRetrying} onClick={() => void retry()}>
+          {isRetrying ? "Retrying..." : "Retry"}
+        </Button>
+      </div>
+    </div>
   );
 }
 

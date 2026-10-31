@@ -68,7 +68,12 @@ export function GradingStep({
           minute or two, and you can leave this page in the meantime.
         </StepInProgress>
       )}
-      {grading?.status === "failed" && <StepFailed error={grading.error} />}
+      {grading?.status === "failed" && (
+        <StepFailed
+          error={grading.error}
+          onRetry={() => regrade({ submissionId })}
+        />
+      )}
       {grading?.status === "done" && (
         <GradingResultView result={grading.result} wordCount={wordCount} />
       )}

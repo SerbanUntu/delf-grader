@@ -10,6 +10,7 @@ import { MissingItem, PageTitle } from "@/components/page-title";
 import { SideBySide, SubmissionImages } from "@/components/submission-images";
 import { api } from "@/convex/_generated/api";
 import { formatDate } from "@/lib/format";
+import { isGradingInputChanged } from "@/lib/grading";
 import { useLocalPages } from "@/lib/local-pages";
 import { getRubric } from "@/lib/rubrics";
 import {
@@ -22,6 +23,7 @@ import {
 import { GradingStep } from "./grading-step";
 import { RedactionStep } from "./redaction-step";
 import { StepList } from "./step-list";
+import { RerunDescription } from "./step-status";
 import { TranscriptionStep } from "./transcription-step";
 import { UploadStep } from "./upload-step";
 
@@ -172,6 +174,16 @@ export function SubmissionView({ submissionId }: { submissionId: string }) {
                   question: values.question,
                 })
               }
+              getSaveWarning={(values) => {
+                const stepsToRerun = getStepsToRerun(statuses, "transcription");
+                return stepsToRerun.length > 0 &&
+                  isGradingInputChanged(exam, values) ? (
+                  <RerunDescription
+                    action="Changing the rubric or the exam question"
+                    steps={stepsToRerun}
+                  />
+                ) : null;
+              }}
             />
           )}
         </div>

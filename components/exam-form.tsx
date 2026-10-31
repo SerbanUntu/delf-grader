@@ -44,7 +44,7 @@ type ExamFormProps = {
   nameField?: NameField;
   submitLabel: string;
   onSubmit: (values: ExamFormValues) => Promise<unknown>;
-  onDone: () => void;
+  onDone?: () => void;
   onCancel?: () => void;
 };
 
@@ -75,7 +75,7 @@ export function ExamForm({
   async function handleSubmit(values: ExamFormValues) {
     try {
       await onSubmit(values);
-      onDone();
+      onDone?.();
     } catch (error) {
       form.setError("root", { message: getErrorMessage(error) });
     }
