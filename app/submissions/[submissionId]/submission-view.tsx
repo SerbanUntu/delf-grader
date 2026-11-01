@@ -116,6 +116,7 @@ export function SubmissionView({ submissionId }: { submissionId: string }) {
                 submissionId={submission._id}
                 savedPages={pages}
                 localPages={localPages}
+                stepsToRerun={getStepsToRerun(statuses, "redaction")}
                 onSaved={() => setChosenStep("transcription")}
               />
             )}

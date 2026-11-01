@@ -1,5 +1,5 @@
 import type { GoogleLanguageModelOptions } from "@ai-sdk/google";
-import { generateText, type ImagePart, type TextPart } from "ai";
+import { type FilePart, generateText, type TextPart } from "ai";
 import { ConvexError, v } from "convex/values";
 import { maxTranscriptionLength } from "../lib/format";
 import { countWords } from "../lib/word-count";
@@ -34,8 +34,8 @@ Return only the transcribed text, with no title, comment or formatting. If the p
 async function readPages(
   ctx: ActionCtx,
   pageIds: Id<"_storage">[],
-): Promise<(TextPart | ImagePart)[]> {
-  const parts: (TextPart | ImagePart)[] = [];
+): Promise<(TextPart | FilePart)[]> {
+  const parts: (TextPart | FilePart)[] = [];
   for (const [index, pageId] of pageIds.entries()) {
     const page = await ctx.storage.get(pageId);
     if (!page) {
@@ -44,8 +44,8 @@ async function readPages(
     parts.push(
       { type: "text", text: `Page ${index + 1} of ${pageIds.length}:` },
       {
-        type: "image",
-        image: new Uint8Array(await page.arrayBuffer()),
+        type: "file",
+        data: new Uint8Array(await page.arrayBuffer()),
         mediaType: "image/jpeg",
       },
     );

@@ -125,7 +125,21 @@ export async function restartGrading(
 }
 
 /**
- * Deletes stored page images.
+ * Finds the submission that a stored page image belongs to.
+ *
+ * @param ctx The function context.
+ * @param pageId The storage ID of the image.
+ * @returns The record linking the image to its submission, or null if no submission owns it.
+ */
+export async function findPageOwner(ctx: QueryCtx, pageId: Id<"_storage">) {
+  return await ctx.db
+    .query("pages")
+    .withIndex("by_storageId", (q) => q.eq("storageId", pageId))
+    .unique();
+}
+
+/**
+ * Deletes stored page images, along with the records of which submission owns them.
  *
  * @param ctx The mutation context.
  * @param pageIds The storage IDs of the images.
@@ -135,6 +149,10 @@ export async function deletePages(
   pageIds: Id<"_storage">[] | undefined,
 ) {
   for (const pageId of pageIds ?? []) {
+    const owner = await findPageOwner(ctx, pageId);
+    if (owner) {
+      await ctx.db.delete("pages", owner._id);
+    }
     if (await ctx.db.system.get("_storage", pageId)) {
       await ctx.storage.delete(pageId);
     }

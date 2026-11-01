@@ -12,6 +12,16 @@ export const acceptedFileTypes = [...imageTypes, pdfType].join(",");
  */
 export class PageError extends Error {}
 
+/**
+ * A rectangle drawn over a page, with its position and size given as fractions of the page's width and height.
+ */
+export type Rectangle = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 function sortByName(files: File[]): File[] {
   return files.toSorted((first, second) =>
     first.name.localeCompare(second.name, undefined, { numeric: true }),
@@ -130,12 +140,16 @@ export async function readPageFiles(files: File[]): Promise<Blob[]> {
 }
 
 /**
- * Draws a page image again and encodes it as a JPEG, which removes its metadata such as GPS location.
+ * Draws a page image again with black rectangles burned into its pixels and encodes it as a JPEG, which removes its metadata such as GPS location.
  *
  * @param page The page image.
+ * @param rectangles The rectangles that hide personal information.
  * @returns The JPEG image, shrunk if it is very large.
  */
-export async function encodePageAsJpeg(page: Blob): Promise<Blob> {
+export async function encodePageAsJpeg(
+  page: Blob,
+  rectangles: Rectangle[] = [],
+): Promise<Blob> {
   const bitmap = await createImageBitmap(page, {
     imageOrientation: "from-image",
   });
@@ -152,5 +166,13 @@ export async function encodePageAsJpeg(page: Blob): Promise<Blob> {
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
+  context.fillStyle = "#000000";
+  for (const rectangle of rectangles) {
+    const left = Math.floor(rectangle.x * canvas.width);
+    const top = Math.floor(rectangle.y * canvas.height);
+    const right = Math.ceil((rectangle.x + rectangle.width) * canvas.width);
+    const bottom = Math.ceil((rectangle.y + rectangle.height) * canvas.height);
+    context.fillRect(left, top, right - left, bottom - top);
+  }
   return await canvasToBlob(canvas, "image/jpeg", jpegQuality);
 }

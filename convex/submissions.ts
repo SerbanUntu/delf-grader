@@ -1,12 +1,13 @@
 import { ConvexError, v } from "convex/values";
 import { defaultSubmissionName, maxPageCount } from "../lib/format";
 import { isGradingInputChanged } from "../lib/grading";
-import type { Doc } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import { mutation, type QueryCtx, query } from "./_generated/server";
 import { findOwned, requireOwned, requireTeacherId } from "./access";
 import {
   deletePages,
   deleteSubmission,
+  findPageOwner,
   pickExam,
   restartGrading,
   startTranscription,
@@ -204,6 +205,9 @@ export const generateUploadUrls = mutation({
         `A submission can have at most ${maxPageCount} pages.`,
       );
     }
+    await ctx.db.patch("submissions", args.submissionId, {
+      uploadUrlsCreatedAt: Date.now(),
+    });
     const urls: string[] = [];
     for (let index = 0; index < args.count; index++) {
       urls.push(await ctx.storage.generateUploadUrl());
@@ -234,16 +238,36 @@ export const savePages = mutation({
         `A submission can have at most ${maxPageCount} pages.`,
       );
     }
+    if (new Set(args.pageIds).size !== args.pageIds.length) {
+      throw new ConvexError("A page cannot be saved twice.");
+    }
+    const newPageIds: Id<"_storage">[] = [];
     for (const pageId of args.pageIds) {
       const file = await ctx.db.system.get("_storage", pageId);
       if (file?.contentType !== "image/jpeg") {
         throw new ConvexError("Every page must be saved as a JPEG image.");
       }
+      if (submission.pageIds?.includes(pageId)) {
+        continue;
+      }
+      const isFreshUpload =
+        submission.uploadUrlsCreatedAt !== undefined &&
+        file._creationTime >= submission.uploadUrlsCreatedAt;
+      if (!isFreshUpload || (await findPageOwner(ctx, pageId))) {
+        throw new ConvexError("A page does not belong to this submission.");
+      }
+      newPageIds.push(pageId);
     }
     await deletePages(
       ctx,
       submission.pageIds?.filter((pageId) => !args.pageIds.includes(pageId)),
     );
+    for (const pageId of newPageIds) {
+      await ctx.db.insert("pages", {
+        submissionId: submission._id,
+        storageId: pageId,
+      });
+    }
     await ctx.db.patch("submissions", submission._id, {
       pageIds: args.pageIds,
     });

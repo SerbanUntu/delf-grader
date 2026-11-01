@@ -24,6 +24,7 @@ const submissionFields = {
   classId: v.id("classes"),
   name: v.string(),
   uploadedAt: v.optional(v.number()),
+  uploadUrlsCreatedAt: v.optional(v.number()),
   pageIds: v.optional(v.array(v.id("_storage"))),
   transcription: v.optional(
     v.union(
@@ -74,4 +75,9 @@ export default defineSchema({
   )
     .index("by_sessionId", ["sessionId"])
     .index("by_classId_and_kind_and_examDate", ["classId", "kind", "examDate"]),
+
+  pages: defineTable({
+    submissionId: v.id("submissions"),
+    storageId: v.id("_storage"),
+  }).index("by_storageId", ["storageId"]),
 });

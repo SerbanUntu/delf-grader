@@ -11,6 +11,8 @@
 import type * as access from "../access.js";
 import type * as ai from "../ai.js";
 import type * as classes from "../classes.js";
+import type * as cleanup from "../cleanup.js";
+import type * as crons from "../crons.js";
 import type * as grading from "../grading.js";
 import type * as model from "../model.js";
 import type * as sessions from "../sessions.js";
@@ -28,6 +30,8 @@ declare const fullApi: ApiFromModules<{
   access: typeof access;
   ai: typeof ai;
   classes: typeof classes;
+  cleanup: typeof cleanup;
+  crons: typeof crons;
   grading: typeof grading;
   model: typeof model;
   sessions: typeof sessions;
