@@ -14,6 +14,7 @@ import {
 import { ItemCard } from "@/components/item-card";
 import { PageHeader } from "@/components/page-header";
 import { MissingItem, PageTitle, SectionTitle } from "@/components/page-title";
+import { StudentLabel } from "@/components/student-label";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import {
@@ -22,6 +23,7 @@ import {
   formatDate,
   submissionNameHint,
 } from "@/lib/format";
+import { useStudentKeys } from "@/lib/students";
 
 /**
  * The page of a class, with its sessions and its individual submissions.
@@ -41,6 +43,7 @@ export function ClassView({ classId }: { classId: string }) {
   );
   const createSession = useMutation(api.sessions.create);
   const createSubmission = useMutation(api.submissions.createIndividual);
+  const { toStudentId } = useStudentKeys();
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [isCreatingSubmission, setIsCreatingSubmission] = useState(false);
 
@@ -118,7 +121,15 @@ export function ClassView({ classId }: { classId: string }) {
                   key={submission._id}
                   href={`/submissions/${submission._id}`}
                   title={submission.name}
-                  details={formatDate(submission.examDate)}
+                  details={
+                    <>
+                      <StudentLabel
+                        studentId={submission.studentId}
+                        classId={submission.classId}
+                      />
+                      <p>{formatDate(submission.examDate)}</p>
+                    </>
+                  }
                   actions={<SubmissionActions submission={submission} />}
                 />
               )}
@@ -153,9 +164,11 @@ export function ClassView({ classId }: { classId: string }) {
               placeholder: () => defaultSubmissionName,
               hint: submissionNameHint,
             }}
-            onCreate={async (values) => {
+            studentClassId={schoolClass._id}
+            onCreate={async ({ studentName = "", ...values }) => {
               const submissionId = await createSubmission({
                 classId: schoolClass._id,
+                studentId: await toStudentId(schoolClass._id, studentName),
                 ...values,
               });
               router.push(`/submissions/${submissionId}`);

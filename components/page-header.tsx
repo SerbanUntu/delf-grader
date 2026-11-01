@@ -1,4 +1,3 @@
-import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { Fragment } from "react";
 import {
@@ -9,6 +8,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { UserMenu } from "@/components/user-menu";
 
 export type BreadcrumbEntry = {
   label: string;
@@ -63,7 +63,7 @@ export function PageHeader({
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <UserButton />
+        <UserMenu />
       </div>
     </header>
   );

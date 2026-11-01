@@ -14,7 +14,7 @@ import {
   withDisplayName,
 } from "./model";
 import { examFields } from "./schema";
-import { cleanExam, cleanName, listLimit } from "./validation";
+import { cleanExam, cleanName, cleanStudentId, listLimit } from "./validation";
 
 function cleanSubmissionName(name: string): string {
   return cleanName(name) || defaultSubmissionName;
@@ -100,7 +100,11 @@ export const get = query({
 });
 
 export const createInSession = mutation({
-  args: { sessionId: v.id("sessions"), name: v.string() },
+  args: {
+    sessionId: v.id("sessions"),
+    name: v.string(),
+    studentId: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
     const teacherId = await requireTeacherId(ctx);
     const session = await requireOwned(ctx, "sessions", args.sessionId);
@@ -110,12 +114,18 @@ export const createInSession = mutation({
       classId: session.classId,
       sessionId: session._id,
       name: cleanSubmissionName(args.name),
+      studentId: cleanStudentId(args.studentId),
     });
   },
 });
 
 export const createIndividual = mutation({
-  args: { classId: v.id("classes"), name: v.string(), ...examFields },
+  args: {
+    classId: v.id("classes"),
+    name: v.string(),
+    studentId: v.optional(v.string()),
+    ...examFields,
+  },
   handler: async (ctx, args) => {
     const teacherId = await requireTeacherId(ctx);
     await requireOwned(ctx, "classes", args.classId);
@@ -124,6 +134,7 @@ export const createIndividual = mutation({
       teacherId,
       classId: args.classId,
       name: cleanSubmissionName(args.name),
+      studentId: cleanStudentId(args.studentId),
       ...cleanExam(args),
     });
   },
@@ -135,6 +146,20 @@ export const rename = mutation({
     await requireOwned(ctx, "submissions", args.submissionId);
     await ctx.db.patch("submissions", args.submissionId, {
       name: cleanSubmissionName(args.name),
+    });
+    return null;
+  },
+});
+
+export const changeStudent = mutation({
+  args: {
+    submissionId: v.id("submissions"),
+    studentId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireOwned(ctx, "submissions", args.submissionId);
+    await ctx.db.patch("submissions", args.submissionId, {
+      studentId: cleanStudentId(args.studentId),
     });
     return null;
   },

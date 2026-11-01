@@ -7,6 +7,7 @@ import { ExamDetails } from "@/components/exam-details";
 import { SubmissionActions } from "@/components/item-actions";
 import { type BreadcrumbEntry, PageHeader } from "@/components/page-header";
 import { MissingItem, PageTitle } from "@/components/page-title";
+import { StudentLabel } from "@/components/student-label";
 import { SideBySide, SubmissionImages } from "@/components/submission-images";
 import { api } from "@/convex/_generated/api";
 import { formatDate } from "@/lib/format";
@@ -88,7 +89,11 @@ export function SubmissionView({ submissionId }: { submissionId: string }) {
             />
           }
         >
-          {formatDate(exam.examDate)}
+          <StudentLabel
+            studentId={submission.studentId}
+            classId={submission.classId}
+          />
+          <p>{formatDate(exam.examDate)}</p>
         </PageTitle>
 
         <div className="mt-8 grid items-start gap-8 lg:grid-cols-[15rem_minmax(0,1fr)]">

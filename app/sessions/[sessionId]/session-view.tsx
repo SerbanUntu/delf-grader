@@ -8,19 +8,16 @@ import { CardGrid } from "@/components/card-grid";
 import { ExamDetails } from "@/components/exam-details";
 import { SessionActions, SubmissionActions } from "@/components/item-actions";
 import { ItemCard } from "@/components/item-card";
-import { NameDialog } from "@/components/name-dialog";
 import { PageHeader } from "@/components/page-header";
 import { MissingItem, PageTitle, SectionTitle } from "@/components/page-title";
+import { StudentLabel } from "@/components/student-label";
+import { NewSubmissionDialog } from "@/components/submission-dialogs";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/convex/_generated/api";
-import {
-  defaultSessionName,
-  defaultSubmissionName,
-  formatDate,
-  submissionNameHint,
-} from "@/lib/format";
+import { defaultSessionName, formatDate } from "@/lib/format";
 import { isGradingInputChanged } from "@/lib/grading";
+import { useStudentKeys } from "@/lib/students";
 
 /**
  * The page of a session, with its exam, its submissions and its analytics.
@@ -36,6 +33,7 @@ export function SessionView({ sessionId }: { sessionId: string }) {
   );
   const updateSession = useMutation(api.sessions.update);
   const createSubmission = useMutation(api.submissions.createInSession);
+  const { toStudentId } = useStudentKeys();
   const [isCreatingSubmission, setIsCreatingSubmission] = useState(false);
 
   if (data === null) {
@@ -126,7 +124,15 @@ export function SessionView({ sessionId }: { sessionId: string }) {
                   key={submission._id}
                   href={`/submissions/${submission._id}`}
                   title={submission.name}
-                  details={formatDate(session.examDate)}
+                  details={
+                    <>
+                      <StudentLabel
+                        studentId={submission.studentId}
+                        classId={submission.classId}
+                      />
+                      <p>{formatDate(session.examDate)}</p>
+                    </>
+                  }
                   actions={<SubmissionActions submission={submission} />}
                 />
               )}
@@ -139,19 +145,15 @@ export function SessionView({ sessionId }: { sessionId: string }) {
           </TabsContent>
         </Tabs>
 
-        <NameDialog
+        <NewSubmissionDialog
           open={isCreatingSubmission}
           onOpenChange={setIsCreatingSubmission}
-          title="Add submission"
-          label="Submission name"
-          initialName={defaultSubmissionName}
-          placeholder={defaultSubmissionName}
-          hint={submissionNameHint}
-          submitLabel="Create"
-          onSave={async (name) => {
+          classId={schoolClass._id}
+          onCreate={async ({ studentName, name }) => {
             const submissionId = await createSubmission({
               sessionId: session._id,
               name,
+              studentId: await toStudentId(schoolClass._id, studentName),
             });
             router.push(`/submissions/${submissionId}`);
           }}

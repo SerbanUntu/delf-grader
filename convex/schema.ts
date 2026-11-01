@@ -23,6 +23,7 @@ const submissionFields = {
   teacherId: v.string(),
   classId: v.id("classes"),
   name: v.string(),
+  studentId: v.optional(v.string()),
   uploadedAt: v.optional(v.number()),
   uploadUrlsCreatedAt: v.optional(v.number()),
   pageIds: v.optional(v.array(v.id("_storage"))),
@@ -75,6 +76,11 @@ export default defineSchema({
   )
     .index("by_sessionId", ["sessionId"])
     .index("by_classId_and_kind_and_examDate", ["classId", "kind", "examDate"]),
+
+  studentKeys: defineTable({
+    teacherId: v.string(),
+    fingerprint: v.string(),
+  }).index("by_teacherId_and_fingerprint", ["teacherId", "fingerprint"]),
 
   pages: defineTable({
     submissionId: v.id("submissions"),

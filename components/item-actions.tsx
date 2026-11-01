@@ -3,9 +3,10 @@
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { NameDialog } from "@/components/name-dialog";
+import { StudentDialog } from "@/components/submission-dialogs";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -22,6 +23,7 @@ import {
   submissionNameHint,
 } from "@/lib/format";
 import { deleteLocalPages } from "@/lib/local-pages";
+import { useStudentKeys } from "@/lib/students";
 
 type ItemActionsProps = {
   itemType: "class" | "session" | "submission";
@@ -38,6 +40,7 @@ type ItemActionsProps = {
     description: string;
     onConfirm: () => Promise<unknown>;
   };
+  menuItems?: ReactNode;
 };
 
 /**
@@ -47,12 +50,14 @@ type ItemActionsProps = {
  * @param itemName The current name of the item, used to label the menu button.
  * @param rename The rename dialog.
  * @param deletion The delete confirmation dialog.
+ * @param menuItems More menu items, shown between "Rename" and "Delete".
  */
 export function ItemActions({
   itemType,
   itemName,
   rename,
   deletion,
+  menuItems,
 }: ItemActionsProps) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -76,6 +81,7 @@ export function ItemActions({
           >
             Rename {itemType}
           </DropdownMenuItem>
+          {menuItems}
           <DropdownMenuItem
             className="text-base text-destructive focus:text-destructive"
             onSelect={() => setIsDeleting(true)}
@@ -215,27 +221,51 @@ export function SubmissionActions({
 }) {
   const renameSubmission = useMutation(api.submissions.rename);
   const removeSubmission = useMutation(api.submissions.remove);
+  const changeStudent = useMutation(api.submissions.changeStudent);
+  const { toStudentId } = useStudentKeys();
   const deleteAndLeave = useDeleteAndLeave(redirectTo);
+  const [isChangingStudent, setIsChangingStudent] = useState(false);
 
   return (
-    <ItemActions
-      itemType="submission"
-      itemName={submission.name}
-      rename={{
-        label: "Submission name",
-        initialName: submission.name,
-        placeholder: defaultSubmissionName,
-        hint: submissionNameHint,
-        onSave: (name) =>
-          renameSubmission({ submissionId: submission._id, name }),
-      }}
-      deletion={{
-        description: `"${submission.name}" will be deleted. This cannot be undone.`,
-        onConfirm: () =>
-          deleteAndLeave(() =>
-            removeSubmission({ submissionId: submission._id }),
-          ),
-      }}
-    />
+    <>
+      <ItemActions
+        itemType="submission"
+        itemName={submission.name}
+        rename={{
+          label: "Submission name",
+          initialName: submission.name,
+          placeholder: defaultSubmissionName,
+          hint: submissionNameHint,
+          onSave: (name) =>
+            renameSubmission({ submissionId: submission._id, name }),
+        }}
+        deletion={{
+          description: `"${submission.name}" will be deleted. This cannot be undone.`,
+          onConfirm: () =>
+            deleteAndLeave(() =>
+              removeSubmission({ submissionId: submission._id }),
+            ),
+        }}
+        menuItems={
+          <DropdownMenuItem
+            className="text-base"
+            onSelect={() => setIsChangingStudent(true)}
+          >
+            Change student
+          </DropdownMenuItem>
+        }
+      />
+      <StudentDialog
+        open={isChangingStudent}
+        onOpenChange={setIsChangingStudent}
+        classId={submission.classId}
+        onSave={async (studentName) =>
+          changeStudent({
+            submissionId: submission._id,
+            studentId: await toStudentId(submission.classId, studentName),
+          })
+        }
+      />
+    </>
   );
 }

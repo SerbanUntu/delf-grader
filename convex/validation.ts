@@ -1,6 +1,7 @@
 import { ConvexError } from "convex/values";
 import { isIsoDate, maxNameLength, maxQuestionLength } from "../lib/format";
 import type { RubricId } from "../lib/rubrics";
+import { isHash } from "../lib/student-ids";
 
 export const listLimit = 500;
 
@@ -63,4 +64,18 @@ export function cleanExam(exam: Exam): Exam {
     );
   }
   return { examDate: exam.examDate, rubricId: exam.rubricId, question };
+}
+
+/**
+ * Checks that a student ID computed in the browser has the right form.
+ *
+ * @param value The student ID, or undefined when there is none.
+ * @returns The same value.
+ * @throws If the value is not a valid student ID.
+ */
+export function cleanStudentId(value: string | undefined): string | undefined {
+  if (value !== undefined && !isHash(value)) {
+    throw new ConvexError("The student ID is not valid.");
+  }
+  return value;
 }
