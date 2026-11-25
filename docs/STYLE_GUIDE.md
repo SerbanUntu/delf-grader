@@ -4,6 +4,7 @@
 - Do not write comments explaining the code. The exceptions are concise, simple to read JSDoc-style docstrings at the top level of public components, classes, or functions that are used in other parts of the codebase. Aim for a one-sentence description, separated by a one-line break before the @param, @return, and @throws clauses.
 - Do not use overly technical vocabulary when simpler to understand words suffice (both in variables and when writing docstrings).
 - Use continental Europe conventions for units, time and date formats, etc. The exception is decimals (required format is `0.25`). The date format is `31/12/1999`.
+- The implementation plan should never say something such as "this is out of scope for now". It is just a comprehensive list of how to implement everything. It doesn't care about when implementation is actually carried out.
 
 # Contributing
 
