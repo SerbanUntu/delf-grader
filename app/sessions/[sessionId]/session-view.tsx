@@ -6,18 +6,21 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CardGrid } from "@/components/card-grid";
 import { ExamDetails } from "@/components/exam-details";
-import { SessionActions, SubmissionActions } from "@/components/item-actions";
-import { ItemCard } from "@/components/item-card";
+import { SessionActions } from "@/components/item-actions";
 import { PageHeader } from "@/components/page-header";
 import { MissingItem, PageTitle, SectionTitle } from "@/components/page-title";
-import { StudentLabel } from "@/components/student-label";
+import { SubmissionCard } from "@/components/submission-card";
 import { NewSubmissionDialog } from "@/components/submission-dialogs";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/convex/_generated/api";
-import { defaultSessionName, formatDate } from "@/lib/format";
+import { defaultSessionName } from "@/lib/format";
 import { isGradingInputChanged } from "@/lib/grading";
-import { useStudentKeys } from "@/lib/students";
+import {
+  getStudentLabel,
+  useStudentKeys,
+  useStudentNames,
+} from "@/lib/students";
 
 /**
  * The page of a session, with its exam, its submissions and its analytics.
@@ -34,6 +37,7 @@ export function SessionView({ sessionId }: { sessionId: string }) {
   const updateSession = useMutation(api.sessions.update);
   const createSubmission = useMutation(api.submissions.createInSession);
   const { toStudentId } = useStudentKeys();
+  const studentNames = useStudentNames();
   const [isCreatingSubmission, setIsCreatingSubmission] = useState(false);
 
   if (data === null) {
@@ -54,7 +58,7 @@ export function SessionView({ sessionId }: { sessionId: string }) {
   const { session, schoolClass } = data;
   const classHref = `/classes/${schoolClass._id}`;
   const hasGradedSubmission =
-    submissions?.some((submission) => submission.grading !== undefined) ?? true;
+    submissions?.some((submission) => submission.isGradingStarted) ?? true;
 
   return (
     <>
@@ -118,23 +122,14 @@ export function SessionView({ sessionId }: { sessionId: string }) {
             />
             <CardGrid
               items={submissions}
+              storageName="delf-grader:cards:session-submissions"
+              getName={(submission) =>
+                getStudentLabel(studentNames, submission.studentId)
+              }
+              nameSortLabel="Student name A to Z"
               emptyMessage="No submissions yet."
               renderItem={(submission) => (
-                <ItemCard
-                  key={submission._id}
-                  href={`/submissions/${submission._id}`}
-                  title={submission.name}
-                  details={
-                    <>
-                      <StudentLabel
-                        studentId={submission.studentId}
-                        classId={submission.classId}
-                      />
-                      <p>{formatDate(session.examDate)}</p>
-                    </>
-                  }
-                  actions={<SubmissionActions submission={submission} />}
-                />
+                <SubmissionCard key={submission._id} submission={submission} />
               )}
             />
           </TabsContent>

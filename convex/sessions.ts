@@ -2,7 +2,12 @@ import { v } from "convex/values";
 import { isGradingInputChanged } from "../lib/grading";
 import { mutation, query } from "./_generated/server";
 import { findOwned, requireOwned, requireTeacherId } from "./access";
-import { deleteSession, restartGrading, withDisplayName } from "./model";
+import {
+  deleteSession,
+  restartGrading,
+  withDisplayName,
+  withSessionStats,
+} from "./model";
 import { examFields } from "./schema";
 import { cleanExam, cleanName, listLimit } from "./validation";
 
@@ -20,9 +25,7 @@ export const listByClass = query({
       )
       .order("desc")
       .take(listLimit);
-    return sessions.map((session) =>
-      withDisplayName(session, schoolClass.name),
-    );
+    return await withSessionStats(ctx, sessions, schoolClass.name);
   },
 });
 

@@ -11,6 +11,7 @@ import {
   pickExam,
   restartGrading,
   startTranscription,
+  toSubmissionCard,
   withDisplayName,
 } from "./model";
 import { examFields } from "./schema";
@@ -38,11 +39,16 @@ export const listBySession = query({
     if (!session) {
       return [];
     }
-    return await ctx.db
+    const submissions = await ctx.db
       .query("submissions")
       .withIndex("by_sessionId", (q) => q.eq("sessionId", session._id))
       .order("desc")
       .take(listLimit);
+    const cards = [];
+    for (const submission of submissions) {
+      cards.push(await toSubmissionCard(ctx, submission, session.examDate));
+    }
+    return cards;
   },
 });
 
@@ -60,7 +66,15 @@ export const listIndividual = query({
       )
       .order("desc")
       .take(listLimit);
-    return submissions.filter((submission) => submission.kind === "individual");
+    const cards = [];
+    for (const submission of submissions) {
+      if (submission.kind === "individual") {
+        cards.push(
+          await toSubmissionCard(ctx, submission, submission.examDate),
+        );
+      }
+    }
+    return cards;
   },
 });
 

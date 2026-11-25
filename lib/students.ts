@@ -9,7 +9,13 @@ import {
   getKeyFingerprint,
   getStudentId,
   parseStudentKey,
+  unknownStudentLabel,
 } from "@/lib/student-ids";
+import {
+  readStorageItem,
+  subscribeToStorage,
+  writeStorageItem,
+} from "./local-storage";
 
 const keyStorageName = "delf-grader:student-key";
 const namesStorageName = "delf-grader:student-names";
@@ -22,35 +28,10 @@ const studentNamesSchema = z.record(
 export type StudentNames = z.infer<typeof studentNamesSchema>;
 
 const emptyNames: StudentNames = {};
-const listeners = new Set<() => void>();
 let cachedNames: { text: string | null; names: StudentNames } = {
   text: null,
   names: emptyNames,
 };
-
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  window.addEventListener("storage", listener);
-  return () => {
-    listeners.delete(listener);
-    window.removeEventListener("storage", listener);
-  };
-}
-
-function readItem(name: string): string | null {
-  try {
-    return localStorage.getItem(name);
-  } catch {
-    return null;
-  }
-}
-
-function writeItem(name: string, value: string) {
-  localStorage.setItem(name, value);
-  for (const listener of listeners) {
-    listener();
-  }
-}
 
 function parseNames(text: string | null): StudentNames {
   if (!text) {
@@ -64,7 +45,7 @@ function parseNames(text: string | null): StudentNames {
 }
 
 function readNames(): StudentNames {
-  const text = readItem(namesStorageName);
+  const text = readStorageItem(namesStorageName);
   if (text !== cachedNames.text) {
     cachedNames = { text, names: parseNames(text) };
   }
@@ -72,7 +53,7 @@ function readNames(): StudentNames {
 }
 
 function readKey(): string | null {
-  const text = readItem(keyStorageName);
+  const text = readStorageItem(keyStorageName);
   return text ? parseStudentKey(text) : null;
 }
 
@@ -82,7 +63,7 @@ function readKey(): string | null {
  * @returns The key, or null if this browser has none.
  */
 export function useStudentKey(): string | null {
-  return useSyncExternalStore(subscribe, readKey, () => null);
+  return useSyncExternalStore(subscribeToStorage, readKey, () => null);
 }
 
 /**
@@ -91,7 +72,7 @@ export function useStudentKey(): string | null {
  * @returns The students, by student ID.
  */
 export function useStudentNames(): StudentNames {
-  return useSyncExternalStore(subscribe, readNames, () => emptyNames);
+  return useSyncExternalStore(subscribeToStorage, readNames, () => emptyNames);
 }
 
 /**
@@ -108,6 +89,23 @@ export function useStudentName(
 }
 
 /**
+ * Builds the text shown for a submission's student: their name, or "Student #abcd" (with is id) when it is not known in this browser.
+ *
+ * @param names The students entered in this browser.
+ * @param studentId The student ID, or undefined when the submission has no student.
+ * @returns The text, or an empty string when the submission has no student.
+ */
+export function getStudentLabel(
+  names: StudentNames,
+  studentId: string | undefined,
+): string {
+  if (!studentId) {
+    return "";
+  }
+  return names[studentId]?.name ?? unknownStudentLabel(studentId);
+}
+
+/**
  * Remembers the name of a student in this browser.
  *
  * @param studentId The student ID computed from the name.
@@ -119,7 +117,7 @@ export function saveStudentName(
   classId: string,
   name: string,
 ) {
-  writeItem(
+  writeStorageItem(
     namesStorageName,
     JSON.stringify({
       ...readNames(),
@@ -142,7 +140,7 @@ export function useStudentKeys() {
   async function createKey(): Promise<string> {
     const newKey = createStudentKey();
     await addKey({ fingerprint: await getKeyFingerprint(newKey) });
-    writeItem(keyStorageName, newKey);
+    writeStorageItem(keyStorageName, newKey);
     return newKey;
   }
 
@@ -165,7 +163,7 @@ export function useStudentKeys() {
       }
       await addKey({ fingerprint });
     }
-    writeItem(keyStorageName, pastedKey);
+    writeStorageItem(keyStorageName, pastedKey);
   }
 
   async function toStudentId(

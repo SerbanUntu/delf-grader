@@ -1,8 +1,10 @@
 import { defaultSessionName } from "../lib/format";
+import { getMedian, roundScore } from "../lib/scores";
+import { getStepStatuses, getSubmissionBadge } from "../lib/steps";
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
-import type { Exam } from "./validation";
+import { type Exam, listLimit } from "./validation";
 
 /**
  * Adds the name shown for a session, which is the default name when the teacher left it empty.
@@ -16,6 +18,121 @@ export function withDisplayName(session: Doc<"sessions">, className: string) {
     ...session,
     displayName:
       session.name ?? defaultSessionName(className, session.examDate),
+  };
+}
+
+/**
+ * Reads the total score of a submission.
+ *
+ * @param submission The submission.
+ * @returns The total score, or null if the submission is not graded.
+ */
+export function getScore(submission: Doc<"submissions">): number | null {
+  return submission.grading?.status === "done"
+    ? submission.grading.result.totalScore
+    : null;
+}
+
+/**
+ * Computes the statistics shown on a session card.
+ *
+ * @param ctx The function context.
+ * @param sessionId The session ID.
+ * @returns The number of submissions and the median score of the graded ones, or null if none is graded.
+ */
+export async function getSessionStats(
+  ctx: QueryCtx,
+  sessionId: Id<"sessions">,
+) {
+  const submissions = await ctx.db
+    .query("submissions")
+    .withIndex("by_sessionId", (q) => q.eq("sessionId", sessionId))
+    .take(listLimit);
+  const scores = submissions.map(getScore).filter((score) => score !== null);
+  return { submissionCount: submissions.length, score: getMedian(scores) };
+}
+
+/**
+ * Adds the statistics shown on session cards to the sessions of a class, including the change from the previous session with a score.
+ *
+ * @param ctx The function context.
+ * @param sessions The sessions, newest first.
+ * @param className The name of the sessions' class.
+ * @returns The sessions with their display name, statistics and change, newest first.
+ */
+export async function withSessionStats(
+  ctx: QueryCtx,
+  sessions: Doc<"sessions">[],
+  className: string,
+) {
+  const cards = [];
+  let previousScore: number | null = null;
+  for (const session of [...sessions].reverse()) {
+    const stats = await getSessionStats(ctx, session._id);
+    cards.push({
+      ...withDisplayName(session, className),
+      ...stats,
+      scoreChange:
+        stats.score !== null && previousScore !== null
+          ? roundScore(stats.score - previousScore)
+          : null,
+    });
+    if (stats.score !== null) {
+      previousScore = stats.score;
+    }
+  }
+  return cards.reverse();
+}
+
+/**
+ * Finds the score shown on a class card, which is the median of the newest session with at least one graded submission.
+ *
+ * @param ctx The function context.
+ * @param classId The class ID.
+ * @returns The median score, or null if no session has a graded submission.
+ */
+export async function getClassScore(
+  ctx: QueryCtx,
+  classId: Id<"classes">,
+): Promise<number | null> {
+  for await (const session of ctx.db
+    .query("sessions")
+    .withIndex("by_classId_and_examDate", (q) => q.eq("classId", classId))
+    .order("desc")) {
+    const { score } = await getSessionStats(ctx, session._id);
+    if (score !== null) {
+      return score;
+    }
+  }
+  return null;
+}
+
+/**
+ * Builds what a submission card shows, leaving out the transcription and the grading details.
+ *
+ * @param ctx The function context.
+ * @param submission The submission.
+ * @param examDate The exam date of the submission or of its session.
+ * @returns The card data.
+ */
+export async function toSubmissionCard(
+  ctx: QueryCtx,
+  submission: Doc<"submissions">,
+  examDate: string,
+) {
+  const coverId = submission.pageIds?.[0];
+  return {
+    _id: submission._id,
+    _creationTime: submission._creationTime,
+    classId: submission.classId,
+    name: submission.name,
+    studentId: submission.studentId,
+    examDate,
+    score: getScore(submission),
+    badge: getSubmissionBadge(getStepStatuses(submission)),
+    isUploaded: submission.uploadedAt !== undefined,
+    isGradingStarted: submission.grading !== undefined,
+    coverUrl: coverId ? await ctx.storage.getUrl(coverId) : null,
   };
 }
 

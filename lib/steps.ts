@@ -18,6 +18,15 @@ export const stepStatusLabels: Record<StepStatus, string> = {
   failed: "Failed",
 };
 
+export type SubmissionBadge = "redact" | "transcribing" | "grading" | "failed";
+
+export const submissionBadgeLabels: Record<SubmissionBadge, string> = {
+  redact: "Redact to save",
+  transcribing: "Transcribing",
+  grading: "Grading",
+  failed: "Failed",
+};
+
 /**
  * Works out the status of each step of a submission.
  *
@@ -35,6 +44,30 @@ export function getStepStatuses(
     transcription: submission.transcription?.status ?? "notStarted",
     grading: submission.grading?.status ?? "notStarted",
   };
+}
+
+/**
+ * Finds the badge shown on a submission's card while work is waiting, running or has failed.
+ *
+ * @param statuses The status of every step.
+ * @returns The badge, or null when nothing is waiting, running or failed.
+ */
+export function getSubmissionBadge(
+  statuses: Record<StepId, StepStatus>,
+): SubmissionBadge | null {
+  if (statuses.transcription === "failed" || statuses.grading === "failed") {
+    return "failed";
+  }
+  if (statuses.redaction === "inProgress") {
+    return "redact";
+  }
+  if (statuses.transcription === "inProgress") {
+    return "transcribing";
+  }
+  if (statuses.grading === "inProgress") {
+    return "grading";
+  }
+  return null;
 }
 
 /**

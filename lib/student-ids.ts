@@ -122,7 +122,7 @@ export function isHash(value: string): boolean {
 }
 
 /**
- * Builds the label shown for a student whose name is not known in this browser, such as "Student #a3f9".
+ * Builds the label shown for a student whose name is not known in this browser, such as "Student #a3f9", with its id.
  *
  * @param studentId The student ID.
  * @returns The label.

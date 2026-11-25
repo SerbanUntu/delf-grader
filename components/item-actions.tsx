@@ -209,14 +209,14 @@ export function SessionActions({
 /**
  * The rename and delete menu of a submission.
  *
- * @param submission The submission.
+ * @param submission The submission, with at least its ID, name and class ID.
  * @param redirectTo The page to open before the submission is deleted, when the menu is on the submission's own page.
  */
 export function SubmissionActions({
   submission,
   redirectTo,
 }: {
-  submission: Doc<"submissions">;
+  submission: Pick<Doc<"submissions">, "_id" | "name" | "classId">;
   redirectTo?: string;
 }) {
   const renameSubmission = useMutation(api.submissions.rename);

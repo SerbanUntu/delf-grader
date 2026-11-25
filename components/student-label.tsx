@@ -28,7 +28,7 @@ import { getStudentId, unknownStudentLabel } from "@/lib/student-ids";
 import { saveStudentName, useStudentKey, useStudentName } from "@/lib/students";
 
 /**
- * The name of a submission's student, as entered in this browser. An unknown student is shown as "Student #a3f9", with a button to type their name.
+ * The name of a submission's student, as entered in this browser. An unknown student is shown as "Student #abcd" (with its id), with a button to type their name.
  *
  * @param studentId The student ID, or undefined when the submission has no student, which shows nothing.
  * @param classId The ID of the submission's class.

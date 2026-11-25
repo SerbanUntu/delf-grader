@@ -7,7 +7,7 @@ import {
   requireOwned,
   requireTeacherId,
 } from "./access";
-import { deleteSession, deleteSubmission } from "./model";
+import { deleteSession, deleteSubmission, getClassScore } from "./model";
 import { cleanRequiredName, listLimit } from "./validation";
 
 export const list = query({
@@ -17,11 +17,19 @@ export const list = query({
     if (!teacherId) {
       return [];
     }
-    return await ctx.db
+    const classes = await ctx.db
       .query("classes")
       .withIndex("by_teacherId", (q) => q.eq("teacherId", teacherId))
       .order("desc")
       .take(listLimit);
+    const cards = [];
+    for (const schoolClass of classes) {
+      cards.push({
+        ...schoolClass,
+        score: await getClassScore(ctx, schoolClass._id),
+      });
+    }
+    return cards;
   },
 });
 

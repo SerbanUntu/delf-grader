@@ -6,15 +6,12 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CardGrid } from "@/components/card-grid";
 import { ExamDialog } from "@/components/exam-form";
-import {
-  ClassActions,
-  SessionActions,
-  SubmissionActions,
-} from "@/components/item-actions";
+import { ClassActions, SessionActions } from "@/components/item-actions";
 import { ItemCard } from "@/components/item-card";
 import { PageHeader } from "@/components/page-header";
 import { MissingItem, PageTitle, SectionTitle } from "@/components/page-title";
-import { StudentLabel } from "@/components/student-label";
+import { ScoreChange } from "@/components/score-change";
+import { SubmissionCard } from "@/components/submission-card";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import {
@@ -23,7 +20,11 @@ import {
   formatDate,
   submissionNameHint,
 } from "@/lib/format";
-import { useStudentKeys } from "@/lib/students";
+import {
+  getStudentLabel,
+  useStudentKeys,
+  useStudentNames,
+} from "@/lib/students";
 
 /**
  * The page of a class, with its sessions and its individual submissions.
@@ -44,6 +45,7 @@ export function ClassView({ classId }: { classId: string }) {
   const createSession = useMutation(api.sessions.create);
   const createSubmission = useMutation(api.submissions.createIndividual);
   const { toStudentId } = useStudentKeys();
+  const studentNames = useStudentNames();
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [isCreatingSubmission, setIsCreatingSubmission] = useState(false);
 
@@ -85,13 +87,31 @@ export function ClassView({ classId }: { classId: string }) {
             />
             <CardGrid
               items={sessions}
+              storageName="delf-grader:cards:sessions"
+              getName={(session) => session.displayName}
               emptyMessage="No sessions yet."
               renderItem={(session) => (
                 <ItemCard
                   key={session._id}
                   href={`/sessions/${session._id}`}
                   title={session.displayName}
-                  details={formatDate(session.examDate)}
+                  details={
+                    <>
+                      <p>{formatDate(session.examDate)}</p>
+                      <p>
+                        {session.submissionCount}{" "}
+                        {session.submissionCount === 1
+                          ? "submission"
+                          : "submissions"}
+                      </p>
+                    </>
+                  }
+                  score={session.score}
+                  scoreExtra={
+                    session.scoreChange !== null && (
+                      <ScoreChange change={session.scoreChange} />
+                    )
+                  }
                   actions={
                     <SessionActions
                       session={session}
@@ -115,23 +135,14 @@ export function ClassView({ classId }: { classId: string }) {
             />
             <CardGrid
               items={submissions}
+              storageName="delf-grader:cards:individual-submissions"
+              getName={(submission) =>
+                getStudentLabel(studentNames, submission.studentId)
+              }
+              nameSortLabel="Student name A to Z"
               emptyMessage="No individual submissions yet."
               renderItem={(submission) => (
-                <ItemCard
-                  key={submission._id}
-                  href={`/submissions/${submission._id}`}
-                  title={submission.name}
-                  details={
-                    <>
-                      <StudentLabel
-                        studentId={submission.studentId}
-                        classId={submission.classId}
-                      />
-                      <p>{formatDate(submission.examDate)}</p>
-                    </>
-                  }
-                  actions={<SubmissionActions submission={submission} />}
-                />
+                <SubmissionCard key={submission._id} submission={submission} />
               )}
             />
           </section>

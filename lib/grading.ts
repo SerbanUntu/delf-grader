@@ -11,6 +11,7 @@ import {
   type RubricId,
   rubricIdValidator,
 } from "./rubrics";
+import { roundScore } from "./scores";
 
 export const gradingResultValidator = v.object({
   rubricId: rubricIdValidator,
@@ -110,10 +111,6 @@ export type GraderAnswer = z.infer<ReturnType<typeof buildGraderSchema>>;
 
 function pluralizePoints(points: number): string {
   return `${formatNumber(points)} ${points === 1 ? "point" : "points"}`;
-}
-
-function roundScore(score: number): number {
-  return Math.round(score * 100) / 100;
 }
 
 /**

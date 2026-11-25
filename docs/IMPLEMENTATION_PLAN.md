@@ -79,7 +79,7 @@ Everything in this plan is in scope for the current milestone, except items mark
 - The number shown depends on the card:
   - Class: the median score of the newest session (by exam date) that has at least one graded submission. Individual submissions are not counted.
   - Session: the median score of its graded submissions. Session cards also show the exam date and the number of submissions.
-  - Submission: its score. Submission cards also show the student name (read from the browser, or "Student #a3f9" when it is not known in the current browser) and the exam date.
+  - Submission: its score. Submission cards also show the student name (read from the browser, or "Student #abcd" (with its id) when it is not known in the current browser) and the exam date.
 - Session cards also show the change from the previous session in the same class (by exam date, skipping sessions without any graded submission), when there is one. It is shown as a number of points (for example `+1.5`) with an arrow pointing up-right, down-right or straight right. The arrow points straight right when the change is 0.5 points or less, and only points up-right or down-right when the change is more than 0.5 points.
 - Submission cards have a cover image: the first page of the redacted image stored on Convex, so the teacher can easily recognize the exam. Before the redacted image is saved, the card shows the local unredacted image (if it is available in the current browser) with a "Redact to save" badge.
 - Submission cards show a status badge while work is in progress or has failed ("Redact to save", "Transcribing", "Grading", "Failed").
