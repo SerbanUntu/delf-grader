@@ -1,5 +1,9 @@
 import { ConvexError, v } from "convex/values";
-import { defaultSubmissionName, maxPageCount } from "../lib/format";
+import {
+  defaultSubmissionName,
+  maxNotesLength,
+  maxPageCount,
+} from "../lib/format";
 import { isGradingInputChanged } from "../lib/grading";
 import type { Doc, Id } from "./_generated/dataModel";
 import { mutation, type QueryCtx, query } from "./_generated/server";
@@ -174,6 +178,22 @@ export const changeStudent = mutation({
     await requireOwned(ctx, "submissions", args.submissionId);
     await ctx.db.patch("submissions", args.submissionId, {
       studentId: cleanStudentId(args.studentId),
+    });
+    return null;
+  },
+});
+
+export const saveNotes = mutation({
+  args: { submissionId: v.id("submissions"), notes: v.string() },
+  handler: async (ctx, args) => {
+    await requireOwned(ctx, "submissions", args.submissionId);
+    if (args.notes.length > maxNotesLength) {
+      throw new ConvexError(
+        `The notes must be at most ${maxNotesLength} characters long.`,
+      );
+    }
+    await ctx.db.patch("submissions", args.submissionId, {
+      notes: args.notes || undefined,
     });
     return null;
   },

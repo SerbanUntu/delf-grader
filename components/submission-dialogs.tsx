@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { getErrorMessage } from "@/lib/errors";
-import { defaultSubmissionName, submissionNameHint } from "@/lib/format";
+import { defaultSubmissionName, noStudentNamesHint } from "@/lib/format";
 import { optionalNameSchema } from "@/lib/schemas";
 import { useStudentKeys } from "@/lib/students";
 
@@ -116,7 +116,7 @@ function NewSubmissionForm({
                   {...field}
                 />
               </FormControl>
-              <FormDescription>{submissionNameHint}</FormDescription>
+              <FormDescription>{noStudentNamesHint}</FormDescription>
               <FormMessage />
             </FormItem>
           )}

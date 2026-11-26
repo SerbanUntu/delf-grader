@@ -19,6 +19,7 @@ import {
   getRubric,
   type Rubric,
 } from "@/lib/rubrics";
+import { NotesField } from "./notes-field";
 import { StepHeading } from "./step-heading";
 import { StepFailed, StepInProgress } from "./step-status";
 
@@ -28,15 +29,18 @@ import { StepFailed, StepInProgress } from "./step-status";
  * @param submissionId The submission ID.
  * @param grading The grading of the submission, or undefined if it has not started.
  * @param wordCount The number of words in the transcription, or null if the transcription is not done.
+ * @param notes The teacher's notes on the submission.
  */
 export function GradingStep({
   submissionId,
   grading,
   wordCount,
+  notes,
 }: {
   submissionId: Id<"submissions">;
   grading: Doc<"submissions">["grading"];
   wordCount: number | null;
+  notes: string;
 }) {
   const regrade = useMutation(api.grading.regrade);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -61,6 +65,11 @@ export function GradingStep({
           </Button>
         )}
       </div>
+      <NotesField
+        key={submissionId}
+        submissionId={submissionId}
+        notes={notes}
+      />
       <FormError message={error} />
       {grading?.status === "inProgress" && (
         <StepInProgress>

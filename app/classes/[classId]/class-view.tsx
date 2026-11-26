@@ -18,7 +18,7 @@ import {
   defaultSessionName,
   defaultSubmissionName,
   formatDate,
-  submissionNameHint,
+  noStudentNamesHint,
 } from "@/lib/format";
 import {
   getStudentLabel,
@@ -173,7 +173,7 @@ export function ClassView({ classId }: { classId: string }) {
             nameField={{
               label: "Submission name",
               placeholder: () => defaultSubmissionName,
-              hint: submissionNameHint,
+              hint: noStudentNamesHint,
             }}
             studentClassId={schoolClass._id}
             onCreate={async ({ studentName = "", ...values }) => {

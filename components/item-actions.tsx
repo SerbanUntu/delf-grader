@@ -20,7 +20,7 @@ import {
   classNamePlaceholder,
   defaultSessionName,
   defaultSubmissionName,
-  submissionNameHint,
+  noStudentNamesHint,
 } from "@/lib/format";
 import { deleteLocalPages } from "@/lib/local-pages";
 import { useStudentKeys } from "@/lib/students";
@@ -235,7 +235,7 @@ export function SubmissionActions({
           label: "Submission name",
           initialName: submission.name,
           placeholder: defaultSubmissionName,
-          hint: submissionNameHint,
+          hint: noStudentNamesHint,
           onSave: (name) =>
             renameSubmission({ submissionId: submission._id, name }),
         }}

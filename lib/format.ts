@@ -3,11 +3,12 @@ import { format, isValid, parse } from "date-fns";
 export const classNamePlaceholder = "Clasa a IX-a Z";
 export const examDatePlaceholder = "31/12/1999";
 export const defaultSubmissionName = "Practice Exam";
-export const submissionNameHint = "Do not include student names";
+export const noStudentNamesHint = "Do not include student names";
 
 export const maxNameLength = 100;
 export const maxQuestionLength = 10000;
 export const maxTranscriptionLength = 20000;
+export const maxNotesLength = 65536;
 export const maxPageCount = 10;
 export const maxUploadSize = 20 * 1024 * 1024;
 

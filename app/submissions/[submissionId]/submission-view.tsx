@@ -145,6 +145,7 @@ export function SubmissionView({ submissionId }: { submissionId: string }) {
                       ? submission.transcription.wordCount
                       : null
                   }
+                  notes={submission.notes ?? ""}
                 />
               </SideBySide>
             )}

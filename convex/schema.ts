@@ -24,6 +24,7 @@ const submissionFields = {
   classId: v.id("classes"),
   name: v.string(),
   studentId: v.optional(v.string()),
+  notes: v.optional(v.string()),
   uploadedAt: v.optional(v.number()),
   uploadUrlsCreatedAt: v.optional(v.number()),
   pageIds: v.optional(v.array(v.id("_storage"))),
