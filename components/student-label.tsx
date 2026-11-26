@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -28,6 +29,7 @@ import { requiredNameSchema } from "@/lib/schemas";
 import { getStudentId, unknownStudentLabel } from "@/lib/student-ids";
 import {
   getClassStudentNames,
+  getStudentHref,
   saveStudentName,
   useStudentKey,
   useStudentName,
@@ -35,7 +37,7 @@ import {
 } from "@/lib/students";
 
 /**
- * The name of a submission's student, as entered in this browser. An unknown student is shown as "Student #abcd" (with its id), with a button to type their name.
+ * The name of a submission's student, as entered in this browser, linking to the student's page. An unknown student is shown as "Student #abcd" (with its id), with a button to type their name.
  *
  * @param studentId The student ID, or undefined when the submission has no student, which shows nothing.
  * @param classId The ID of the submission's class.
@@ -48,21 +50,46 @@ export function StudentLabel({
   classId: string;
 }) {
   const name = useStudentName(studentId);
-  const [isIdentifying, setIsIdentifying] = useState(false);
 
   if (!studentId) {
     return null;
   }
+  const link = (
+    <Link
+      href={getStudentHref(classId, studentId)}
+      className="relative z-10 font-medium wrap-break-word text-foreground underline-offset-4 hover:underline"
+    >
+      {name ?? unknownStudentLabel(studentId)}
+    </Link>
+  );
   if (name) {
-    return (
-      <p className="font-medium wrap-break-word text-foreground">{name}</p>
-    );
+    return <p>{link}</p>;
   }
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-      <span className="font-medium text-foreground">
-        {unknownStudentLabel(studentId)}
-      </span>
+      {link}
+      <IdentifyButton studentId={studentId} classId={classId} />
+    </div>
+  );
+}
+
+/**
+ * A button that opens a dialog to type the name of a student whose name is not known in this browser.
+ *
+ * @param studentId The student ID.
+ * @param classId The ID of the student's class.
+ */
+export function IdentifyButton({
+  studentId,
+  classId,
+}: {
+  studentId: string;
+  classId: string;
+}) {
+  const [isIdentifying, setIsIdentifying] = useState(false);
+
+  return (
+    <>
       <Button
         variant="outline"
         size="sm"
@@ -80,7 +107,7 @@ export function StudentLabel({
           />
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }
 

@@ -113,13 +113,13 @@ export async function getClassScore(
  *
  * @param ctx The function context.
  * @param submission The submission.
- * @param examDate The exam date of the submission or of its session.
+ * @param exam The exam date and rubric of the submission or of its session.
  * @returns The card data.
  */
 export async function toSubmissionCard(
   ctx: QueryCtx,
   submission: Doc<"submissions">,
-  examDate: string,
+  exam: Pick<Exam, "examDate" | "rubricId">,
 ) {
   const coverId = submission.pageIds?.[0];
   return {
@@ -128,7 +128,8 @@ export async function toSubmissionCard(
     classId: submission.classId,
     name: submission.name,
     studentId: submission.studentId,
-    examDate,
+    examDate: exam.examDate,
+    rubricId: exam.rubricId,
     score: getScore(submission),
     badge: getSubmissionBadge(getStepStatuses(submission)),
     isUploaded: submission.uploadedAt !== undefined,

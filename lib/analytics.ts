@@ -1,9 +1,12 @@
 import type { GradingResult } from "./grading";
-import type {
-  AnomalyId,
-  CriterionId,
-  MistakeCategoryId,
-  Rubric,
+import {
+  type AnalyticsCriterionId,
+  type AnomalyId,
+  analyticsCriteria,
+  type CriterionId,
+  getRubric,
+  type MistakeCategoryId,
+  type Rubric,
 } from "./rubrics";
 import { roundScore } from "./scores";
 
@@ -127,4 +130,83 @@ export function computeSessionAnalytics(
     ).length,
   }));
   return { gradedCount: graded.length, criteria, anomalies };
+}
+
+/**
+ * The share of points kept in each analytics criterion of one exam, from 0 to 100. Analytics criteria that the exam's rubric has no criterion for are missing.
+ */
+export type PercentsKept = Partial<Record<AnalyticsCriterionId, number>>;
+
+/**
+ * Computes the share of points kept in each analytics criterion of a grading result, which is the sum of the scores of its rubric criteria as a percentage of the sum of their maximums.
+ *
+ * @param result The grading result.
+ * @returns The percentages, by analytics criterion.
+ */
+export function getPercentsKept(result: GradingResult): PercentsKept {
+  const rubric = getRubric(result.rubricId);
+  const percents: PercentsKept = {};
+  for (const analyticsCriterion of analyticsCriteria) {
+    let score = 0;
+    let maxScore = 0;
+    for (const criterion of rubric.criteria) {
+      const criterionResult = result.criteria.find(
+        (candidate) => candidate.criterionId === criterion.id,
+      );
+      if (
+        criterion.analyticsCriterionId === analyticsCriterion.id &&
+        criterionResult
+      ) {
+        score += criterionResult.score;
+        maxScore += criterion.maxScore;
+      }
+    }
+    if (maxScore > 0) {
+      percents[analyticsCriterion.id] = roundScore((score / maxScore) * 100);
+    }
+  }
+  return percents;
+}
+
+/**
+ * The aggregates of one analytics criterion over the graded exams of a student.
+ */
+export interface StudentCriterionAnalytics {
+  analyticsCriterionId: AnalyticsCriterionId;
+  examCount: number;
+  averagePercentKept: number;
+}
+
+/**
+ * Computes the statistics of a student over their graded exams, which can use different rubrics.
+ *
+ * @param results The grading results of the student's exams.
+ * @returns For each analytics criterion that at least one exam has, the average percentage of points kept, and the mistake categories found, sorted from the most to the fewest exams.
+ */
+export function computeStudentAnalytics(results: GradingResult[]) {
+  const percents = results.map(getPercentsKept);
+  const criteria = analyticsCriteria.flatMap(
+    (analyticsCriterion): StudentCriterionAnalytics[] => {
+      const values = percents.flatMap(
+        (examPercents) => examPercents[analyticsCriterion.id] ?? [],
+      );
+      if (values.length === 0) {
+        return [];
+      }
+      const total = values.reduce((sum, value) => sum + value, 0);
+      return [
+        {
+          analyticsCriterionId: analyticsCriterion.id,
+          examCount: values.length,
+          averagePercentKept: roundScore(total / values.length),
+        },
+      ];
+    },
+  );
+  const mistakeCategories = countMistakeCategories(
+    results.map((result) =>
+      result.criteria.flatMap((criterion) => criterion.deductions),
+    ),
+  );
+  return { criteria, mistakeCategories };
 }

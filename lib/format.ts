@@ -73,6 +73,16 @@ export function formatNumber(value: number, maximumDecimals = 2): string {
 }
 
 /**
+ * Formats a percentage without decimals, such as `75%`.
+ *
+ * @param value The percentage, from 0 to 100.
+ * @returns The formatted percentage.
+ */
+export function formatPercent(value: number): string {
+  return `${formatNumber(value, 0)}%`;
+}
+
+/**
  * Builds the name used for a session whose name was left empty, such as "Clasa a IX-a Z - 31/12/1999".
  *
  * @param className The name of the class, or an empty string if it is not known yet.

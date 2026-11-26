@@ -78,7 +78,8 @@ export default defineSchema({
     ),
   )
     .index("by_sessionId", ["sessionId"])
-    .index("by_classId_and_kind_and_examDate", ["classId", "kind", "examDate"]),
+    .index("by_classId_and_kind_and_examDate", ["classId", "kind", "examDate"])
+    .index("by_classId_and_studentId", ["classId", "studentId"]),
 
   studentKeys: defineTable({
     teacherId: v.string(),

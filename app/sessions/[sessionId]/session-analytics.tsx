@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import type { ReactNode } from "react";
 import {
   Bar,
   BarChart,
@@ -11,6 +10,11 @@ import {
   YAxis,
 } from "recharts";
 import {
+  MistakeCategoryList,
+  pluralizeSubmissions,
+  Stat,
+} from "@/components/analytics";
+import {
   type ChartConfig,
   ChartContainer,
   ChartTooltip,
@@ -18,27 +22,14 @@ import {
 } from "@/components/ui/chart";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
-import type { CriterionAnalytics, MistakeCategoryCount } from "@/lib/analytics";
+import type { CriterionAnalytics } from "@/lib/analytics";
 import { formatNumber } from "@/lib/format";
-import {
-  type Criterion,
-  getLevelLabel,
-  getMistakeCategory,
-  getRubric,
-} from "@/lib/rubrics";
+import { type Criterion, getLevelLabel, getRubric } from "@/lib/rubrics";
 import { getLevelBarColor } from "@/lib/scores";
 
 const chartConfig = {
   count: { label: "Submissions" },
 } satisfies ChartConfig;
-
-function pluralizeSubmissions(count: number): string {
-  return `${count} ${count === 1 ? "submission" : "submissions"}`;
-}
-
-function pluralizePoints(points: number): string {
-  return `${formatNumber(points)} ${points === 1 ? "point" : "points"}`;
-}
 
 /**
  * The "Analytics" tab of a session, with aggregates of its graded submissions for every criterion and anomaly of its rubric.
@@ -174,18 +165,12 @@ function CriterionView({
       <ScoreChart criterion={criterion} analytics={analytics} />
       <LevelLegend criterion={criterion} />
       {analytics.mistakeCategories.length > 0 && (
-        <MistakeCategoryList counts={analytics.mistakeCategories} />
+        <section className="mt-5">
+          <h4 className="mb-2 font-medium">Mistake categories</h4>
+          <MistakeCategoryList counts={analytics.mistakeCategories} />
+        </section>
       )}
     </li>
-  );
-}
-
-function Stat({ term, children }: { term: string; children: ReactNode }) {
-  return (
-    <div className="rounded-lg bg-muted px-3 py-2">
-      <dt className="text-sm text-muted-foreground">{term}</dt>
-      <dd className="font-semibold tabular-nums">{children}</dd>
-    </div>
   );
 }
 
@@ -285,35 +270,5 @@ function LevelLegend({ criterion }: { criterion: Criterion }) {
         </div>
       ))}
     </dl>
-  );
-}
-
-function MistakeCategoryList({ counts }: { counts: MistakeCategoryCount[] }) {
-  return (
-    <section className="mt-5">
-      <h4 className="font-medium">Mistake categories</h4>
-      <ul className="mt-2 grid gap-2">
-        {counts.map(({ categoryId, submissionCount, pointsRemoved }) => {
-          const category = getMistakeCategory(categoryId);
-          return (
-            <li
-              key={categoryId}
-              className="flex flex-wrap items-baseline justify-between gap-x-4"
-            >
-              <span>
-                <span className="font-medium">{category.frenchName}</span>{" "}
-                <span className="text-muted-foreground">
-                  ({category.englishSubtitle})
-                </span>
-              </span>
-              <span className="tabular-nums">
-                {pluralizeSubmissions(submissionCount)},{" "}
-                {pluralizePoints(pointsRemoved)} removed
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
   );
 }

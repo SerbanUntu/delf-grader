@@ -11,6 +11,7 @@ import { ItemCard } from "@/components/item-card";
 import { PageHeader } from "@/components/page-header";
 import { MissingItem, PageTitle, SectionTitle } from "@/components/page-title";
 import { ScoreChange } from "@/components/score-change";
+import { StudentCard } from "@/components/student-card";
 import { SubmissionCard } from "@/components/submission-card";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
@@ -22,12 +23,13 @@ import {
 } from "@/lib/format";
 import {
   getStudentLabel,
+  mergeSameStudents,
   useStudentKeys,
   useStudentNames,
 } from "@/lib/students";
 
 /**
- * The page of a class, with its sessions and its individual submissions.
+ * The page of a class, with its sessions, its individual submissions and its students.
  *
  * @param classId The class ID read from the URL.
  */
@@ -40,6 +42,10 @@ export function ClassView({ classId }: { classId: string }) {
   );
   const submissions = useQuery(
     api.submissions.listIndividual,
+    schoolClass ? { classId: schoolClass._id } : "skip",
+  );
+  const students = useQuery(
+    api.students.listByClass,
     schoolClass ? { classId: schoolClass._id } : "skip",
   );
   const createSession = useMutation(api.sessions.create);
@@ -143,6 +149,29 @@ export function ClassView({ classId }: { classId: string }) {
               emptyMessage="No individual submissions yet."
               renderItem={(submission) => (
                 <SubmissionCard key={submission._id} submission={submission} />
+              )}
+            />
+          </section>
+
+          <section className="mt-12">
+            <SectionTitle title="Students" />
+            <CardGrid
+              items={
+                students &&
+                mergeSameStudents(students, studentNames, schoolClass._id)
+              }
+              storageName="cards:students"
+              getName={(student) =>
+                getStudentLabel(studentNames, student.studentId)
+              }
+              nameSortLabel="Student name A to Z"
+              emptyMessage="Students appear here once a submission with a student name is graded."
+              renderItem={(student) => (
+                <StudentCard
+                  key={student._id}
+                  student={student}
+                  classId={schoolClass._id}
+                />
               )}
             />
           </section>

@@ -7,6 +7,7 @@ import {
   createStudentKey,
   getKeyFingerprint,
   getStudentId,
+  normalizeStudentName,
   parseStudentKey,
   unknownStudentLabel,
 } from "@/lib/student-ids";
@@ -124,6 +125,87 @@ export function getStudentLabel(
     return "";
   }
   return names[studentId]?.name ?? unknownStudentLabel(studentId);
+}
+
+/**
+ * Lists the student IDs that this browser maps to the same name in a class as one student, so a student identified under several keys keeps one history.
+ *
+ * @param names The students entered in this browser.
+ * @param classId The ID of the class.
+ * @param studentId The ID of the student.
+ * @returns The student IDs sorted, including the given one, or only the given one when its name is not known in this browser.
+ */
+export function getSameStudentIds(
+  names: StudentNames,
+  classId: string,
+  studentId: string,
+): string[] {
+  const student = names[studentId];
+  if (student?.classId !== classId) {
+    return [studentId];
+  }
+  const name = normalizeStudentName(student.name);
+  return Object.entries(names)
+    .filter(
+      ([, candidate]) =>
+        candidate.classId === classId &&
+        normalizeStudentName(candidate.name) === name,
+    )
+    .map(([candidateId]) => candidateId)
+    .sort();
+}
+
+type StudentSummary = {
+  studentId: string;
+  gradedCount: number;
+  examDate: string;
+  _creationTime: number;
+  score: number;
+};
+
+/**
+ * Combines the summaries of student IDs that this browser maps to the same name in a class, keeping the newest score.
+ *
+ * @param students The summary of each student ID found in the class.
+ * @param names The students entered in this browser.
+ * @param classId The ID of the class.
+ * @returns One summary per student, with an `_id` that is the same for every ID of the student.
+ */
+export function mergeSameStudents<Summary extends StudentSummary>(
+  students: Summary[],
+  names: StudentNames,
+  classId: string,
+): (Summary & { _id: string })[] {
+  const merged = new Map<string, Summary & { _id: string }>();
+  for (const student of students) {
+    const _id = getSameStudentIds(names, classId, student.studentId)[0];
+    const current = merged.get(_id);
+    if (!current) {
+      merged.set(_id, { ...student, _id });
+      continue;
+    }
+    const isNewer =
+      (student.examDate.localeCompare(current.examDate) ||
+        student._creationTime - current._creationTime) > 0;
+    merged.set(_id, {
+      ...(isNewer ? student : current),
+      _id,
+      studentId: current.studentId,
+      gradedCount: current.gradedCount + student.gradedCount,
+    });
+  }
+  return Array.from(merged.values());
+}
+
+/**
+ * Builds the address of a student's page.
+ *
+ * @param classId The ID of the student's class.
+ * @param studentId The student ID.
+ * @returns The address.
+ */
+export function getStudentHref(classId: string, studentId: string): string {
+  return `/classes/${classId}/students/${studentId}`;
 }
 
 /**

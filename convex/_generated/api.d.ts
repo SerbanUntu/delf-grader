@@ -17,6 +17,7 @@ import type * as grading from "../grading.js";
 import type * as model from "../model.js";
 import type * as sessions from "../sessions.js";
 import type * as studentKeys from "../studentKeys.js";
+import type * as students from "../students.js";
 import type * as submissions from "../submissions.js";
 import type * as transcription from "../transcription.js";
 import type * as validation from "../validation.js";
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   model: typeof model;
   sessions: typeof sessions;
   studentKeys: typeof studentKeys;
+  students: typeof students;
   submissions: typeof submissions;
   transcription: typeof transcription;
   validation: typeof validation;

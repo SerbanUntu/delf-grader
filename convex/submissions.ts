@@ -51,7 +51,7 @@ export const listBySession = query({
       .take(listLimit);
     const cards = [];
     for (const submission of submissions) {
-      cards.push(await toSubmissionCard(ctx, submission, session.examDate));
+      cards.push(await toSubmissionCard(ctx, submission, session));
     }
     return cards;
   },
@@ -74,9 +74,7 @@ export const listIndividual = query({
     const cards = [];
     for (const submission of submissions) {
       if (submission.kind === "individual") {
-        cards.push(
-          await toSubmissionCard(ctx, submission, submission.examDate),
-        );
+        cards.push(await toSubmissionCard(ctx, submission, submission));
       }
     }
     return cards;

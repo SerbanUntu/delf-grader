@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import type { api } from "@/convex/_generated/api";
 import { formatDate } from "@/lib/format";
 import { useLocalPages } from "@/lib/local-pages";
+import { getRubric } from "@/lib/rubrics";
 import { type SubmissionBadge, submissionBadgeLabels } from "@/lib/steps";
 import { cn } from "@/lib/utils";
 
@@ -28,11 +29,14 @@ const badgeClassNames: Record<SubmissionBadge, string> = {
  * The card of a submission, with the first page as its cover, the student name, the exam date, the status and the score.
  *
  * @param submission The submission's card data.
+ * @param showRubric Whether to show the rubric name instead of the student name, as on a student's page.
  */
 export function SubmissionCard({
   submission,
+  showRubric = false,
 }: {
   submission: SubmissionCardData;
+  showRubric?: boolean;
 }) {
   return (
     <ItemCard
@@ -70,10 +74,14 @@ export function SubmissionCard({
       }
       details={
         <>
-          <StudentLabel
-            studentId={submission.studentId}
-            classId={submission.classId}
-          />
+          {showRubric ? (
+            <p>{getRubric(submission.rubricId).name}</p>
+          ) : (
+            <StudentLabel
+              studentId={submission.studentId}
+              classId={submission.classId}
+            />
+          )}
           <p>{formatDate(submission.examDate)}</p>
         </>
       }
