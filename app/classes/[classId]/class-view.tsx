@@ -87,7 +87,7 @@ export function ClassView({ classId }: { classId: string }) {
             />
             <CardGrid
               items={sessions}
-              storageName="delf-grader:cards:sessions"
+              storageName="cards:sessions"
               getName={(session) => session.displayName}
               emptyMessage="No sessions yet."
               renderItem={(session) => (
@@ -135,7 +135,7 @@ export function ClassView({ classId }: { classId: string }) {
             />
             <CardGrid
               items={submissions}
-              storageName="delf-grader:cards:individual-submissions"
+              storageName="cards:individual-submissions"
               getName={(submission) =>
                 getStudentLabel(studentNames, submission.studentId)
               }

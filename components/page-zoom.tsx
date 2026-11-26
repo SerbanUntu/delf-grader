@@ -80,7 +80,7 @@ function scrollToAnchor(
 }
 
 function useMagnifier(screen: ZoomScreen) {
-  const storageName = `delf-grader:magnifier:${screen}`;
+  const storageName = `magnifier:${screen}`;
   const isOnByDefault = isMagnifierOnByDefault[screen];
   const isOn = useSyncExternalStore(
     subscribeToStorage,

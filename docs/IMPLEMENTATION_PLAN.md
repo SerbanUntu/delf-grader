@@ -317,7 +317,7 @@ A submission goes through four steps:
   - "I still have the old browser": export the student names from the old browser's user menu, move the file to this computer, and import it from this browser's user menu.
   - "I no longer have the old browser": a new key is created as soon as a student name is entered. Past submissions show as "Student #a3f9". Open one, type the student's name and click "Identify", which restores the name on every submission with the same ID.
 - The dialog also opens by itself, once per browser, when the browser has no key but the account already has one.
-- Everything kept in the browser (the secret key, the ID to name map, card sorting and filters, the IndexedDB unredacted images, the layout and magnifier choices and the feedback language) is stored under the signed-in user's Clerk ID, so several teachers can share a browser. Browser data saved before this change, without a user ID, is deleted the first time the app loads. Nothing is cleared when signing out.
+- Everything kept in the browser (the secret key, the ID to name map, card sorting and filters, the IndexedDB unredacted images, the layout and magnifier choices and the feedback language) is stored under the signed-in user's Clerk ID, so several teachers can share a browser. Browser data saved before this change, without a user ID, is moved under the ID of the first user who signs in, then deleted from its old place. Nothing is cleared when signing out.
 
 ## Post-Milestone 3
 

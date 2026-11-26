@@ -10,7 +10,7 @@ import {
   writeStorageItem,
 } from "./local-storage";
 
-const storageName = "delf-grader:feedback-language";
+const storageName = "feedback-language";
 
 function readFeedbackLanguage(): FeedbackLanguage {
   const value = readStorageItem(storageName);

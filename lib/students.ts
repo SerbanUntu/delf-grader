@@ -17,8 +17,8 @@ import {
   writeStorageItem,
 } from "./local-storage";
 
-const keyStorageName = "delf-grader:student-key";
-const namesStorageName = "delf-grader:student-names";
+const keyStorageName = "student-key";
+const namesStorageName = "student-names";
 
 const studentNamesSchema = z.record(
   z.string(),

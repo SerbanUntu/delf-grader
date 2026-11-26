@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getStorageUserId } from "./local-storage";
 
 const databaseName = "delf-grader";
 const storeName = "localPages";
@@ -41,6 +42,11 @@ async function runTransaction<Result>(
   });
 }
 
+function toPagesKey(submissionId: string): string | null {
+  const userId = getStorageUserId();
+  return userId ? `${userId}:${submissionId}` : null;
+}
+
 function notifyListeners() {
   for (const listener of listeners) {
     listener();
@@ -56,20 +62,29 @@ function notifyListeners() {
 export async function getLocalPages(
   submissionId: string,
 ): Promise<Blob[] | null> {
+  const key = toPagesKey(submissionId);
+  if (!key) {
+    return null;
+  }
   const pages = await runTransaction<Blob[] | undefined>("readonly", (store) =>
-    store.get(submissionId),
+    store.get(key),
   );
   return pages?.length ? pages : null;
 }
 
 /**
- * Keeps the unredacted pages of a submission in this browser, replacing any pages kept before.
+ * Keeps the unredacted pages of a submission in this browser for the signed-in user, replacing any pages kept before.
  *
  * @param submissionId The submission ID.
  * @param pages The page images in order.
+ * @throws If nobody is signed in.
  */
 export async function saveLocalPages(submissionId: string, pages: Blob[]) {
-  await runTransaction("readwrite", (store) => store.put(pages, submissionId));
+  const key = toPagesKey(submissionId);
+  if (!key) {
+    throw new Error("Sign in to keep the pages in this browser.");
+  }
+  await runTransaction("readwrite", (store) => store.put(pages, key));
   notifyListeners();
 }
 
@@ -79,16 +94,49 @@ export async function saveLocalPages(submissionId: string, pages: Blob[]) {
  * @param submissionIds The submission IDs.
  */
 export async function deleteLocalPages(submissionIds: string[]) {
-  if (submissionIds.length === 0) {
+  const keys = submissionIds.flatMap((submissionId) => {
+    const key = toPagesKey(submissionId);
+    return key ? [key] : [];
+  });
+  if (keys.length === 0) {
     return;
   }
   await runTransaction("readwrite", (store) => {
-    for (const submissionId of submissionIds) {
-      store.delete(submissionId);
+    for (const key of keys) {
+      store.delete(key);
     }
     return undefined;
   });
   notifyListeners();
+}
+
+/**
+ * Moves the unredacted pages kept in this browser before they were stored under a user ID to the given user.
+ *
+ * @param userId The ID of the signed-in user.
+ */
+export async function moveLocalPagesWithoutUser(userId: string) {
+  let hasMovedPages = false;
+  await runTransaction("readwrite", (store) => {
+    const request = store.openCursor();
+    request.onsuccess = () => {
+      const cursor = request.result;
+      if (!cursor) {
+        return;
+      }
+      const submissionId = String(cursor.key);
+      if (!submissionId.includes(":")) {
+        store.put(cursor.value, `${userId}:${submissionId}`);
+        cursor.delete();
+        hasMovedPages = true;
+      }
+      cursor.continue();
+    };
+    return undefined;
+  });
+  if (hasMovedPages) {
+    notifyListeners();
+  }
 }
 
 /**

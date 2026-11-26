@@ -39,7 +39,7 @@ export function HomeView() {
         <div className="mt-8">
           <CardGrid
             items={classes}
-            storageName="delf-grader:cards:classes"
+            storageName="cards:classes"
             getName={(schoolClass) => schoolClass.name}
             emptyMessage="No classes yet. Create one to get started."
             renderItem={(schoolClass) => (

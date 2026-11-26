@@ -125,7 +125,7 @@ export function SessionView({ sessionId }: { sessionId: string }) {
             />
             <CardGrid
               items={submissions}
-              storageName="delf-grader:cards:session-submissions"
+              storageName="cards:session-submissions"
               getName={(submission) =>
                 getStudentLabel(studentNames, submission.studentId)
               }
