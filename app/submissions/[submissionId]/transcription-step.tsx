@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { getErrorMessage } from "@/lib/errors";
+import { useFeedbackLanguage } from "@/lib/feedback-language";
 import { maxTranscriptionLength } from "@/lib/format";
 import { countWords } from "@/lib/word-count";
 import { StepHeading } from "./step-heading";
@@ -35,6 +36,7 @@ export function TranscriptionStep({
   stepsToRerun: string[];
 }) {
   const retry = useMutation(api.transcription.retry);
+  const language = useFeedbackLanguage();
 
   if (transcription?.status === "done") {
     return (
@@ -66,7 +68,7 @@ export function TranscriptionStep({
       {transcription?.status === "failed" && (
         <StepFailed
           error={transcription.error}
-          onRetry={() => retry({ submissionId })}
+          onRetry={() => retry({ submissionId, language })}
         />
       )}
       {transcription === undefined && (
@@ -90,6 +92,7 @@ function TranscriptionEditor({
   stepsToRerun: string[];
 }) {
   const saveTranscription = useMutation(api.transcription.save);
+  const language = useFeedbackLanguage();
   const textAreaId = useId();
   const [draft, setDraft] = useState(text);
   const [isSaving, setIsSaving] = useState(false);
@@ -102,7 +105,7 @@ function TranscriptionEditor({
     setError(undefined);
     setIsSaving(true);
     try {
-      await saveTranscription({ submissionId, text: draft });
+      await saveTranscription({ submissionId, text: draft, language });
     } catch (caught) {
       setError(getErrorMessage(caught));
     } finally {

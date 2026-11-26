@@ -21,7 +21,7 @@ Everything in this plan is in scope for the current milestone, except items mark
 - Everything must be clearly legible, including for users without excellent vision. The base font size is 16px.
 - Make very light use of gradients and animations.
 - The website is designed for laptops. It does not need to look polished on phones or tablets, but nothing may be broken there: everything must still be visible and usable on screens down to 360px wide. Do not design mobile-first, and prefer simple code over phone-specific layouts.
-- All UI text is in English, except DELF terms such as "DELF", "Production écrite" and the rubric criterion names. Users know French, but the developers and testers of the app do not, so French criterion names have a short English subtitle. The fixed labels of the exported feedback are the exception, as it is read by students (see "Exporting feedback").
+- All UI text is in English, except DELF terms such as "DELF", "Production écrite" and the rubric criterion names. Users know French, but the developers and testers of the app do not, so French criterion names have a short English subtitle. The text the grader writes and the exported feedback are the exception, as they are read by students and follow the feedback language (see "Feedback language").
 - Dates are shown as `31/12/1999`. Decimal numbers use a decimal point (`17.5`).
 - Every page has a header with the logo, a "?" button (see "Student identity"), Clerk's user button and breadcrumbs (Classes > class > session > submission).
 - Every destructive action (deleting, or saving a change that re-runs later steps) asks for confirmation in a dialog.
@@ -166,10 +166,19 @@ A submission goes through four steps:
 ### Exporting feedback
 
 - The grading screen has a "Copy feedback" button, which copies the feedback as plain text suited to pasting into a messaging app such as WhatsApp, and a "Download PDF" button, which downloads it as a PDF made in the browser with a PDF library.
-- The feedback is read by students, so its fixed labels (for example "Note totale") are in French. Everything else appears exactly as in the app, with no translation: criterion, anomaly and category names in French, and reasons and overviews in English.
+- The feedback is read by students, so its fixed labels (for example "Note totale") are in the language of its grading result (see "Feedback language"). Everything else appears exactly as in the app, with no translation: criterion, level, anomaly and category names in French, and reasons and overviews in the feedback language.
 - It contains the submission name as its title, the exam date, the total score out of 25, the anomalies, the overview of the paper and, for each criterion, its name, score out of its maximum, level label, overview and deductions (points removed, the reason and the categories).
 - Notes, the transcription, the images, the student name and the rubric name are not exported, and there is no export of a whole session.
 - The PDF file is named "<submission name> - <student name> - 31-12-1999.pdf" (with the exam date), so the teacher can tell the files apart. The student name is only used in the file name, and is left out when it is not known in the current browser. Placeholders such as "Student #a3f9" never appear. Characters that are not allowed in file names are removed.
+
+### Feedback language
+
+- A dropdown right of the "Grading" heading, away from the action buttons, picks the feedback language: English, Romanian or French, each with its flag drawn as a small inline SVG (flag emojis do not render on Windows). French is the default. The choice is kept in local storage and applies to the whole app.
+- The browser sends the language with every action that starts or restarts grading, and it is saved on the submission, so the grading that starts after transcription uses it.
+- The grader writes reasons and overviews in the feedback language. Quotes of the student's text and DELF terms (criterion, level, anomaly and category names, and the text type) stay in French.
+- Fixed text written by code (the export's labels and the reasons of automatic deductions) is translated in code, in maps keyed by language, so adding a language fails to type-check until every map has it.
+- Each grading result stores its language, which the export uses so its labels match its text. Results saved before the language was stored are in English.
+- Changing the language on a graded submission asks whether to re-grade it in the new language. "Cancel" keeps the current result, and the new language is used from the next grading on.
 
 ## Rubrics and grading
 
@@ -230,7 +239,7 @@ A submission goes through four steps:
 
 ### Grader
 
-- The grader (Claude Opus 5.5, with the effort set to high through `providerOptions: { anthropic: { effort: "high" } }`) receives the rubric's `systemPrompt` together with the common instructions, the exam question, the transcription and the word count. It grades each submission once.
+- The grader (Claude Opus 5.5, with the effort set to high through `providerOptions: { anthropic: { effort: "high" } }`) receives the rubric's `systemPrompt` together with the common instructions, the exam question, the transcription, the word count and the feedback language. It grades each submission once.
 - It infers the expected text type (email, formal letter, article, forum post, essay, contribution to a debate, etc.) from the question, since DELF questions almost always name it. There is no text type field. Guidance for each text type is part of the common instructions. If the inferred type is wrong, the teacher fixes the question text, which re-runs grading.
 - For each criterion, the grader first compares the paper with the level descriptions and picks the level (allowed score) the paper reaches, then lists the deductions that explain the gap between that score and the maximum. This comparison and the evidence it quotes are not stored.
 - Borderline cases follow tie-break rules written in RUBRICS.md and in the `systemPrompt`s, for example "Give B1+ only when the paper meets every point of the B1+ description. When torn between two levels, choose the lower one." These rules are based on the official DELF correction guides, which are searched for and cited in RUBRICS.md.
@@ -240,12 +249,12 @@ A submission goes through four steps:
   - An overview of the whole paper: its main strengths and weaknesses.
   - For each criterion: the chosen score, an overview and the deductions. A deduction is a number of points removed, a reason written by the LLM and, with mistake categories, its categories.
 - Overviews are free-form feedback that never changes a score. A criterion overview gives what the student did well, with quoted examples, and mentions every mistake under that criterion that did not cost points, including when the criterion has its full points.
-- Reasons and overviews are written in English and quote the student's text in French.
+- Reasons and overviews are written in the feedback language and quote the student's text in French. The comparisons are written in English whatever the feedback language.
 - New fields of the stored grading result are optional, so results saved before them stay valid without a migration, and the screens leave out what is missing.
 
 ### Computing the result
 
-- Code adds automatic deductions with a fixed reason, so everything that removes points has the same form:
+- Code adds automatic deductions with a fixed reason in the feedback language, so everything that removes points has the same form:
   - Length rules (the Pre-Sept. 2022 grids' "length" criterion, and "too short" in the new grids, which sets every criterion to 0).
   - Blank paper (every criterion set to 0).
   - Anomaly caps in the new grids (for example "Hors-sujet discursif: capped at 1 point").
@@ -308,7 +317,7 @@ A submission goes through four steps:
   - "I still have the old browser": export the student names from the old browser's user menu, move the file to this computer, and import it from this browser's user menu.
   - "I no longer have the old browser": a new key is created as soon as a student name is entered. Past submissions show as "Student #a3f9". Open one, type the student's name and click "Identify", which restores the name on every submission with the same ID.
 - The dialog also opens by itself, once per browser, when the browser has no key but the account already has one.
-- Everything kept in the browser (the secret key, the ID to name map, card sorting and filters, the IndexedDB unredacted images and the layout and magnifier choices) is stored under the signed-in user's Clerk ID, so several teachers can share a browser. Browser data saved before this change, without a user ID, is deleted the first time the app loads. Nothing is cleared when signing out.
+- Everything kept in the browser (the secret key, the ID to name map, card sorting and filters, the IndexedDB unredacted images, the layout and magnifier choices and the feedback language) is stored under the signed-in user's Clerk ID, so several teachers can share a browser. Browser data saved before this change, without a user ID, is deleted the first time the app loads. Nothing is cleared when signing out.
 
 ## Post-Milestone 3
 

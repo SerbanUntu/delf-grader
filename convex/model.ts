@@ -1,4 +1,5 @@
 import { defaultSessionName } from "../lib/format";
+import type { FeedbackLanguage } from "../lib/languages";
 import { getMedian, roundScore } from "../lib/scores";
 import { getStepStatuses, getSubmissionBadge } from "../lib/steps";
 import { internal } from "./_generated/api";
@@ -187,15 +188,18 @@ export function isCurrentRun(
  *
  * @param ctx The mutation context.
  * @param submissionId The submission ID.
+ * @param language The language of the feedback written by the grading that follows.
  */
 export async function startTranscription(
   ctx: MutationCtx,
   submissionId: Id<"submissions">,
+  language: FeedbackLanguage,
 ) {
   const startedAt = Date.now();
   await ctx.db.patch("submissions", submissionId, {
     transcription: { status: "inProgress", startedAt },
     grading: undefined,
+    feedbackLanguage: language,
   });
   await ctx.scheduler.runAfter(0, internal.transcription.transcribe, {
     submissionId,
@@ -208,14 +212,17 @@ export async function startTranscription(
  *
  * @param ctx The mutation context.
  * @param submissionId The submission ID.
+ * @param language The language of the feedback, or undefined to keep the language saved on the submission.
  */
 export async function startGrading(
   ctx: MutationCtx,
   submissionId: Id<"submissions">,
+  language: FeedbackLanguage | undefined,
 ) {
   const startedAt = Date.now();
   await ctx.db.patch("submissions", submissionId, {
     grading: { status: "inProgress", startedAt },
+    ...(language && { feedbackLanguage: language }),
   });
   await ctx.scheduler.runAfter(0, internal.grading.grade, {
     submissionId,
@@ -228,16 +235,18 @@ export async function startGrading(
  *
  * @param ctx The mutation context.
  * @param submission The submission.
+ * @param language The language of the feedback.
  */
 export async function restartGrading(
   ctx: MutationCtx,
   submission: Doc<"submissions">,
+  language: FeedbackLanguage,
 ) {
   if (
     submission.grading !== undefined &&
     submission.transcription?.status === "done"
   ) {
-    await startGrading(ctx, submission._id);
+    await startGrading(ctx, submission._id, language);
   }
 }
 

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { computeSessionAnalytics } from "../lib/analytics";
 import { isGradingInputChanged } from "../lib/grading";
+import { feedbackLanguageValidator } from "../lib/languages";
 import { getRubric } from "../lib/rubrics";
 import { mutation, query } from "./_generated/server";
 import { findOwned, requireOwned, requireTeacherId } from "./access";
@@ -100,6 +101,7 @@ export const update = mutation({
     sessionId: v.id("sessions"),
     name: v.string(),
     ...examFields,
+    language: feedbackLanguageValidator,
   },
   handler: async (ctx, args) => {
     const session = await requireOwned(ctx, "sessions", args.sessionId);
@@ -112,7 +114,7 @@ export const update = mutation({
       for await (const submission of ctx.db
         .query("submissions")
         .withIndex("by_sessionId", (q) => q.eq("sessionId", session._id))) {
-        await restartGrading(ctx, submission);
+        await restartGrading(ctx, submission, args.language);
       }
     }
     return null;

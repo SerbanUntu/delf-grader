@@ -5,6 +5,7 @@ import {
   maxPageCount,
 } from "../lib/format";
 import { isGradingInputChanged } from "../lib/grading";
+import { feedbackLanguageValidator } from "../lib/languages";
 import type { Doc, Id } from "./_generated/dataModel";
 import { mutation, type QueryCtx, query } from "./_generated/server";
 import { findOwned, requireOwned, requireTeacherId } from "./access";
@@ -200,7 +201,11 @@ export const saveNotes = mutation({
 });
 
 export const updateExam = mutation({
-  args: { submissionId: v.id("submissions"), ...examFields },
+  args: {
+    submissionId: v.id("submissions"),
+    ...examFields,
+    language: feedbackLanguageValidator,
+  },
   handler: async (ctx, args) => {
     const submission = await requireOwned(
       ctx,
@@ -215,7 +220,7 @@ export const updateExam = mutation({
     const exam = cleanExam(args);
     await ctx.db.patch("submissions", submission._id, exam);
     if (isGradingInputChanged(submission, exam)) {
-      await restartGrading(ctx, submission);
+      await restartGrading(ctx, submission, args.language);
     }
     return null;
   },
@@ -279,6 +284,7 @@ export const savePages = mutation({
   args: {
     submissionId: v.id("submissions"),
     pageIds: v.array(v.id("_storage")),
+    language: feedbackLanguageValidator,
   },
   handler: async (ctx, args) => {
     const submission = await requireOwned(
@@ -330,7 +336,7 @@ export const savePages = mutation({
     await ctx.db.patch("submissions", submission._id, {
       pageIds: args.pageIds,
     });
-    await startTranscription(ctx, submission._id);
+    await startTranscription(ctx, submission._id, args.language);
     return null;
   },
 });

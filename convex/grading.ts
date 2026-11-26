@@ -16,6 +16,12 @@ import {
   getGradedCriteria,
   gradingResultValidator,
 } from "../lib/grading";
+import {
+  defaultFeedbackLanguage,
+  type FeedbackLanguage,
+  feedbackLanguageNames,
+  feedbackLanguageValidator,
+} from "../lib/languages";
 import { getRubric, type Rubric, type RubricId } from "../lib/rubrics";
 import { internal } from "./_generated/api";
 import {
@@ -78,7 +84,7 @@ Overviews are feedback for the student. They never change a score, so write them
 
 # Reasons and overviews
 
-- Write reasons and overviews in English, for a teacher who may not speak French. Each reason is one or two short sentences.
+- Write reasons and overviews in the language given under "Feedback language". Each reason is one or two short sentences.
 - Quote the student's text in French, exactly as transcribed, between double quotes. When there is a correction, give it after the quote, for example: "il faut que je vais" should be "il faut que j'aille" (subjunctive after "il faut que").
 - When one deduction or overview covers several mistakes of the same kind, quote up to three examples.
 
@@ -116,14 +122,23 @@ Anomaly IDs:
 ${anomalies.join("\n")}`;
 }
 
-function buildInstructions(rubric: Rubric): string {
+function describeFeedbackLanguage(language: FeedbackLanguage): string {
+  const languageName = feedbackLanguageNames[language];
+  return `# Feedback language
+
+Write every reason, every criterion overview and the paper overview in ${languageName}, because the student reads them in ${languageName}. Keep quotes of the student's text in French, exactly as transcribed, and keep DELF terms in French: criterion, level and anomaly names, and the text type. Write the comparisons in English, whatever the feedback language.`;
+}
+
+function buildInstructions(rubric: Rubric, language: FeedbackLanguage): string {
   return `${commonInstructions}
 
 # Rubric
 
 ${rubric.systemPrompt}
 
-${describeAnswerFormat(rubric)}`;
+${describeAnswerFormat(rubric)}
+
+${describeFeedbackLanguage(language)}`;
 }
 
 function buildPrompt(
@@ -131,6 +146,7 @@ function buildPrompt(
   question: string,
   text: string,
   wordCount: number,
+  language: FeedbackLanguage,
 ): string {
   return `<exam_question>
 ${question}
@@ -142,24 +158,36 @@ ${wordCount} words. The rubric asks for at least ${rubric.minimumWords} words.
 
 <student_text>
 ${text}
-</student_text>`;
+</student_text>
+
+Write the reasons and overviews in ${feedbackLanguageNames[language]}.`;
 }
 
-async function gradeText(input: {
+type GradingInput = {
   rubricId: RubricId;
   question: string;
   text: string;
   wordCount: number;
-}): Promise<GradingResult> {
+  language: FeedbackLanguage;
+};
+
+async function gradeText(input: GradingInput): Promise<GradingResult> {
   const rubric = getRubric(input.rubricId);
-  if (getAutomaticZeroReason(rubric, input.wordCount)) {
-    return computeGradingResult(rubric, input.wordCount, null);
+  const { language } = input;
+  if (getAutomaticZeroReason(rubric, input.wordCount, language)) {
+    return computeGradingResult(rubric, input.wordCount, null, language);
   }
-  const schema = buildGraderSchema(rubric);
+  const schema = buildGraderSchema(rubric, language);
   const messages: ModelMessage[] = [
     {
       role: "user",
-      content: buildPrompt(rubric, input.question, input.text, input.wordCount),
+      content: buildPrompt(
+        rubric,
+        input.question,
+        input.text,
+        input.wordCount,
+        language,
+      ),
     },
   ];
   let lastProblem = "";
@@ -169,7 +197,7 @@ async function gradeText(input: {
         model: getGraderModel(),
         instructions: {
           role: "system",
-          content: buildInstructions(rubric),
+          content: buildInstructions(rubric, language),
           providerOptions: {
             anthropic: { cacheControl: { type: "ephemeral" } },
           },
@@ -179,7 +207,7 @@ async function gradeText(input: {
         providerOptions: { anthropic: { effort: "high" } },
       });
       try {
-        return computeGradingResult(rubric, input.wordCount, output);
+        return computeGradingResult(rubric, input.wordCount, output, language);
       } catch (error) {
         if (!(error instanceof GraderAnswerError)) {
           throw error;
@@ -225,6 +253,7 @@ export const getInput = internalQuery({
       question: exam.question,
       text: submission.transcription.text,
       wordCount: submission.transcription.wordCount,
+      language: submission.feedbackLanguage ?? defaultFeedbackLanguage,
     };
   },
 });
@@ -232,12 +261,10 @@ export const getInput = internalQuery({
 export const grade = internalAction({
   args: { submissionId: v.id("submissions"), startedAt: v.number() },
   handler: async (ctx, args) => {
-    const input: {
-      rubricId: RubricId;
-      question: string;
-      text: string;
-      wordCount: number;
-    } | null = await ctx.runQuery(internal.grading.getInput, args);
+    const input: GradingInput | null = await ctx.runQuery(
+      internal.grading.getInput,
+      args,
+    );
     if (!input) {
       return null;
     }
@@ -291,7 +318,10 @@ export const fail = internalMutation({
 });
 
 export const regrade = mutation({
-  args: { submissionId: v.id("submissions") },
+  args: {
+    submissionId: v.id("submissions"),
+    language: feedbackLanguageValidator,
+  },
   handler: async (ctx, args) => {
     const submission = await requireOwned(
       ctx,
@@ -306,7 +336,7 @@ export const regrade = mutation({
     if (submission.grading?.status === "inProgress") {
       throw new ConvexError("The submission is already being graded.");
     }
-    await startGrading(ctx, submission._id);
+    await startGrading(ctx, submission._id, args.language);
     return null;
   },
 });

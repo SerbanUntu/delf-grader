@@ -1,5 +1,9 @@
 import type { Content, TDocumentDefinitions } from "pdfmake/interfaces";
-import { type Feedback, feedbackLabels, formatDeduction } from "./feedback";
+import {
+  type Feedback,
+  type FeedbackLabels,
+  formatDeduction,
+} from "./feedback";
 
 type PdfMake = typeof import("pdfmake/build/pdfmake");
 
@@ -12,7 +16,10 @@ function heading(text: string): Content {
   return { text, style: "heading", headlineLevel: 1 };
 }
 
-function criterionContent(criterion: Feedback["criteria"][number]): Content {
+function criterionContent(
+  criterion: Feedback["criteria"][number],
+  labels: FeedbackLabels,
+): Content {
   return {
     margin: [0, 12, 0, 0],
     stack: [
@@ -42,15 +49,20 @@ function criterionContent(criterion: Feedback["criteria"][number]): Content {
             unbreakable: true,
             margin: [0, 6, 0, 0],
             stack: [
-              { text: `${feedbackLabels.deductions} :`, bold: true },
               {
-                ul: criterion.deductions.map(formatDeduction),
+                text: `${labels.deductions}${labels.colon.trimEnd()}`,
+                bold: true,
+              },
+              {
+                ul: criterion.deductions.map((deduction) =>
+                  formatDeduction(deduction, labels),
+                ),
                 margin: [0, 2, 0, 0],
               },
             ],
           }
         : {
-            text: feedbackLabels.noDeductions,
+            text: labels.noDeductions,
             color: mutedColor,
             margin: [0, 6, 0, 0],
           },
@@ -59,6 +71,7 @@ function criterionContent(criterion: Feedback["criteria"][number]): Content {
 }
 
 function buildDocument(feedback: Feedback): TDocumentDefinitions {
+  const { labels } = feedback;
   return {
     pageSize: "A4",
     pageMargins: pageMargin,
@@ -91,27 +104,26 @@ function buildDocument(feedback: Feedback): TDocumentDefinitions {
       },
       {
         text: [
-          { text: `${feedbackLabels.examDate} : `, color: mutedColor },
+          { text: `${labels.examDate}${labels.colon}`, color: mutedColor },
           feedback.examDate,
         ],
       },
       {
-        text: `${feedbackLabels.totalScore} : ${feedback.totalScore}`,
+        text: `${labels.totalScore}${labels.colon}${feedback.totalScore}`,
         fontSize: 16,
         bold: true,
         margin: [0, 10, 0, 0],
       },
       ...(feedback.anomalies.length > 0
-        ? [
-            heading(feedbackLabels.anomalies),
-            { ul: feedback.anomalies } as Content,
-          ]
+        ? [heading(labels.anomalies), { ul: feedback.anomalies } as Content]
         : []),
       ...(feedback.overview
-        ? [heading(feedbackLabels.overview), feedback.overview]
+        ? [heading(labels.overview), feedback.overview]
         : []),
-      heading(feedbackLabels.criteria),
-      ...feedback.criteria.map(criterionContent),
+      heading(labels.criteria),
+      ...feedback.criteria.map((criterion) =>
+        criterionContent(criterion, labels),
+      ),
     ],
   };
 }

@@ -10,6 +10,7 @@ import { MissingItem, PageTitle } from "@/components/page-title";
 import { StudentLabel } from "@/components/student-label";
 import { SideBySide, SubmissionImages } from "@/components/submission-images";
 import { api } from "@/convex/_generated/api";
+import { useFeedbackLanguage } from "@/lib/feedback-language";
 import { formatDate } from "@/lib/format";
 import { isGradingInputChanged } from "@/lib/grading";
 import { useLocalPages } from "@/lib/local-pages";
@@ -36,6 +37,7 @@ import { UploadStep } from "./upload-step";
 export function SubmissionView({ submissionId }: { submissionId: string }) {
   const data = useQuery(api.submissions.get, { submissionId });
   const updateExam = useMutation(api.submissions.updateExam);
+  const language = useFeedbackLanguage();
   const localPages = useLocalPages(submissionId);
   const [chosenStep, setChosenStep] = useState<StepId>();
 
@@ -182,6 +184,7 @@ export function SubmissionView({ submissionId }: { submissionId: string }) {
                   examDate: values.examDate,
                   rubricId: values.rubricId,
                   question: values.question,
+                  language,
                 })
               }
               getSaveWarning={(values) => {

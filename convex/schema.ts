@@ -1,6 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { gradingResultValidator } from "../lib/grading";
+import { feedbackLanguageValidator } from "../lib/languages";
 import { rubricIdValidator } from "../lib/rubrics";
 
 export const examFields = {
@@ -25,6 +26,7 @@ const submissionFields = {
   name: v.string(),
   studentId: v.optional(v.string()),
   notes: v.optional(v.string()),
+  feedbackLanguage: v.optional(feedbackLanguageValidator),
   uploadedAt: v.optional(v.number()),
   uploadUrlsCreatedAt: v.optional(v.number()),
   pageIds: v.optional(v.array(v.id("_storage"))),

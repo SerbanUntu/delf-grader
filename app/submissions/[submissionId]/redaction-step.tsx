@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { getErrorMessage } from "@/lib/errors";
+import { useFeedbackLanguage } from "@/lib/feedback-language";
 import { deleteLocalPages, type LocalPage } from "@/lib/local-pages";
 import { encodePageAsJpeg, PageError } from "@/lib/page-images";
 import { type DrawnRectangle, RedactionEditor } from "./redaction-editor";
@@ -140,6 +141,7 @@ function RedactionForm({
 }) {
   const generateUploadUrls = useMutation(api.submissions.generateUploadUrls);
   const savePages = useMutation(api.submissions.savePages);
+  const language = useFeedbackLanguage();
   const [rectangles, setRectangles] = useState<DrawnRectangle[][]>(() =>
     pages.map(() => []),
   );
@@ -178,7 +180,7 @@ function RedactionForm({
         done++;
         setProgress({ done, total });
       }
-      await savePages({ submissionId, pageIds });
+      await savePages({ submissionId, pageIds, language });
       if (!isSaved) {
         await deleteLocalPages([submissionId]).catch(() => undefined);
       }

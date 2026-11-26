@@ -11,8 +11,17 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { getErrorMessage } from "@/lib/errors";
+import {
+  saveFeedbackLanguage,
+  useFeedbackLanguage,
+} from "@/lib/feedback-language";
 import { formatNumber } from "@/lib/format";
 import { type GradingResult, getAutomaticZeroReason } from "@/lib/grading";
+import {
+  type FeedbackLanguage,
+  feedbackLanguageNames,
+  legacyFeedbackLanguage,
+} from "@/lib/languages";
 import {
   type Criterion,
   getLevelLabel,
@@ -20,6 +29,7 @@ import {
   type Rubric,
 } from "@/lib/rubrics";
 import { FeedbackActions } from "./feedback-actions";
+import { FeedbackLanguageSelect } from "./feedback-language-select";
 import { NotesField } from "./notes-field";
 import { StepHeading } from "./step-heading";
 import { StepFailed, StepInProgress } from "./step-status";
@@ -53,22 +63,38 @@ export function GradingStep({
   examDate: string;
 }) {
   const regrade = useMutation(api.grading.regrade);
+  const language = useFeedbackLanguage();
   const [isConfirming, setIsConfirming] = useState(false);
+  const [languageToConfirm, setLanguageToConfirm] =
+    useState<FeedbackLanguage>();
   const [error, setError] = useState<string>();
 
-  async function confirmRegrade() {
+  async function confirmRegrade(regradeLanguage: FeedbackLanguage) {
     setError(undefined);
     try {
-      await regrade({ submissionId });
+      await regrade({ submissionId, language: regradeLanguage });
     } catch (caught) {
       setError(getErrorMessage(caught));
     }
   }
 
+  function changeLanguage(next: FeedbackLanguage) {
+    saveFeedbackLanguage(next);
+    if (
+      grading?.status === "done" &&
+      (grading.result.language ?? legacyFeedbackLanguage) !== next
+    ) {
+      setLanguageToConfirm(next);
+    }
+  }
+
   return (
     <section className="grid gap-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <StepHeading title="Grading" />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <StepHeading title="Grading" />
+          <FeedbackLanguageSelect value={language} onChange={changeLanguage} />
+        </div>
         {grading?.status === "done" && (
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => setIsConfirming(true)}>
@@ -94,7 +120,7 @@ export function GradingStep({
       {grading?.status === "failed" && (
         <StepFailed
           error={grading.error}
-          onRetry={() => regrade({ submissionId })}
+          onRetry={() => regrade({ submissionId, language })}
         />
       )}
       {grading?.status === "done" && (
@@ -115,9 +141,22 @@ export function GradingStep({
         open={isConfirming}
         onOpenChange={setIsConfirming}
         title="Re-grade this submission?"
-        description="Grading runs again on the same transcription and exam question. The current result will be replaced."
-        onConfirm={confirmRegrade}
+        description={`Grading runs again on the same transcription and exam question, with the feedback written in ${feedbackLanguageNames[language]}. The current result will be replaced.`}
+        onConfirm={() => confirmRegrade(language)}
       />
+      {languageToConfirm && (
+        <ConfirmDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) {
+              setLanguageToConfirm(undefined);
+            }
+          }}
+          title={`Re-grade in ${feedbackLanguageNames[languageToConfirm]}?`}
+          description={`Grading runs again on the same transcription and exam question, with the feedback written in ${feedbackLanguageNames[languageToConfirm]}. The current result will be replaced. Click "Cancel" to keep it, and ${feedbackLanguageNames[languageToConfirm]} will be used from the next grading on.`}
+          onConfirm={() => confirmRegrade(languageToConfirm)}
+        />
+      )}
     </section>
   );
 }
@@ -207,7 +246,7 @@ function Warnings({
   wordCount: number | null;
 }) {
   const zeroReason =
-    wordCount === null ? null : getAutomaticZeroReason(rubric, wordCount);
+    wordCount === null ? null : getAutomaticZeroReason(rubric, wordCount, "en");
   const isShort =
     !zeroReason && wordCount !== null && wordCount < rubric.minimumWords;
   const anomalies = rubric.anomalies.filter((anomaly) =>

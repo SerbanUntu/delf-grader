@@ -14,6 +14,7 @@ import { NewSubmissionDialog } from "@/components/submission-dialogs";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/convex/_generated/api";
+import { useFeedbackLanguage } from "@/lib/feedback-language";
 import { defaultSessionName } from "@/lib/format";
 import { isGradingInputChanged } from "@/lib/grading";
 import {
@@ -36,6 +37,7 @@ export function SessionView({ sessionId }: { sessionId: string }) {
     data ? { sessionId: data.session._id } : "skip",
   );
   const updateSession = useMutation(api.sessions.update);
+  const language = useFeedbackLanguage();
   const createSubmission = useMutation(api.submissions.createInSession);
   const { toStudentId } = useStudentKeys();
   const studentNames = useStudentNames();
@@ -92,7 +94,7 @@ export function SessionView({ sessionId }: { sessionId: string }) {
                 defaultSessionName(schoolClass.name, examDate),
             }}
             onSave={(values) =>
-              updateSession({ sessionId: session._id, ...values })
+              updateSession({ sessionId: session._id, ...values, language })
             }
             getSaveWarning={(values) =>
               hasGradedSubmission && isGradingInputChanged(session, values)

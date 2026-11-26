@@ -2,6 +2,7 @@ import type { GoogleLanguageModelOptions } from "@ai-sdk/google";
 import { type FilePart, generateText, type TextPart } from "ai";
 import { ConvexError, v } from "convex/values";
 import { maxTranscriptionLength } from "../lib/format";
+import { feedbackLanguageValidator } from "../lib/languages";
 import { countWords } from "../lib/word-count";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
@@ -127,7 +128,7 @@ export const complete = internalMutation({
         wordCount: countWords(args.text),
       },
     });
-    await startGrading(ctx, submission._id);
+    await startGrading(ctx, submission._id, undefined);
     return null;
   },
 });
@@ -154,7 +155,10 @@ export const fail = internalMutation({
 });
 
 export const retry = mutation({
-  args: { submissionId: v.id("submissions") },
+  args: {
+    submissionId: v.id("submissions"),
+    language: feedbackLanguageValidator,
+  },
   handler: async (ctx, args) => {
     const submission = await requireOwned(
       ctx,
@@ -164,13 +168,17 @@ export const retry = mutation({
     if (submission.transcription?.status !== "failed") {
       throw new ConvexError("Only a failed transcription can be retried.");
     }
-    await startTranscription(ctx, submission._id);
+    await startTranscription(ctx, submission._id, args.language);
     return null;
   },
 });
 
 export const save = mutation({
-  args: { submissionId: v.id("submissions"), text: v.string() },
+  args: {
+    submissionId: v.id("submissions"),
+    text: v.string(),
+    language: feedbackLanguageValidator,
+  },
   handler: async (ctx, args) => {
     const submission = await requireOwned(
       ctx,
@@ -194,7 +202,7 @@ export const save = mutation({
     await ctx.db.patch("submissions", submission._id, {
       transcription: { status: "done", text, wordCount: countWords(text) },
     });
-    await startGrading(ctx, submission._id);
+    await startGrading(ctx, submission._id, args.language);
     return null;
   },
 });

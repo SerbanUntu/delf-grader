@@ -1,18 +1,59 @@
 import { formatDate, formatNumber } from "./format";
 import type { GradingResult } from "./grading";
+import { type FeedbackLanguage, legacyFeedbackLanguage } from "./languages";
 import { getLevelLabel, getRubric } from "./rubrics";
 import { maxTotalScore } from "./scores";
 
-export const feedbackLabels = {
-  examDate: "Date de l'examen",
-  totalScore: "Note totale",
-  anomalies: "Anomalies relevées",
-  overview: "Appréciation générale",
-  criteria: "Détail par critère",
-  deductions: "Points retirés",
-  noDeductions: "Aucun point retiré.",
-  automatic: "automatique",
-} as const;
+/**
+ * The fixed text of the exported feedback in one language, with the colon written as that language writes it.
+ */
+export interface FeedbackLabels {
+  colon: string;
+  examDate: string;
+  totalScore: string;
+  anomalies: string;
+  overview: string;
+  criteria: string;
+  deductions: string;
+  noDeductions: string;
+  automatic: string;
+}
+
+export const feedbackLabels: Record<FeedbackLanguage, FeedbackLabels> = {
+  en: {
+    colon: ": ",
+    examDate: "Exam date",
+    totalScore: "Total score",
+    anomalies: "Anomalies found",
+    overview: "Overall feedback",
+    criteria: "Feedback by criterion",
+    deductions: "Points removed",
+    noDeductions: "No points removed.",
+    automatic: "automatic",
+  },
+  ro: {
+    colon: ": ",
+    examDate: "Data examenului",
+    totalScore: "Punctaj total",
+    anomalies: "Anomalii semnalate",
+    overview: "Apreciere generală",
+    criteria: "Detalii pe criterii",
+    deductions: "Puncte scăzute",
+    noDeductions: "Nu s-au scăzut puncte.",
+    automatic: "automat",
+  },
+  fr: {
+    colon: " : ",
+    examDate: "Date de l'examen",
+    totalScore: "Note totale",
+    anomalies: "Anomalies relevées",
+    overview: "Appréciation générale",
+    criteria: "Détail par critère",
+    deductions: "Points retirés",
+    noDeductions: "Aucun point retiré.",
+    automatic: "automatique",
+  },
+};
 
 export interface FeedbackDeduction {
   points: string;
@@ -32,6 +73,7 @@ export interface FeedbackCriterion {
  * The feedback on a graded submission as it is shown to the student, with its numbers already formatted.
  */
 export interface Feedback {
+  labels: FeedbackLabels;
   title: string;
   examDate: string;
   totalScore: string;
@@ -59,6 +101,7 @@ export function buildFeedback({
 }): Feedback {
   const rubric = getRubric(result.rubricId);
   return {
+    labels: feedbackLabels[result.language ?? legacyFeedbackLanguage],
     title: submissionName,
     examDate: formatDate(examDate),
     totalScore: `${formatNumber(result.totalScore)}/${maxTotalScore}`,
@@ -93,16 +136,18 @@ export function buildFeedback({
 }
 
 /**
- * Writes the text of a deduction, such as "-1 : The verb is not conjugated (automatique)".
+ * Writes the text of a deduction, such as "-1 : Le verbe n'est pas conjugué. (automatique)".
  *
  * @param deduction The deduction.
+ * @param labels The fixed text in the language of the feedback.
  * @returns The text of the deduction.
  */
-export function formatDeduction(deduction: FeedbackDeduction): string {
-  const automatic = deduction.isAutomatic
-    ? ` (${feedbackLabels.automatic})`
-    : "";
-  return `${deduction.points} : ${deduction.reason}${automatic}`;
+export function formatDeduction(
+  deduction: FeedbackDeduction,
+  labels: FeedbackLabels,
+): string {
+  const automatic = deduction.isAutomatic ? ` (${labels.automatic})` : "";
+  return `${deduction.points}${labels.colon}${deduction.reason}${automatic}`;
 }
 
 /**
@@ -112,34 +157,37 @@ export function formatDeduction(deduction: FeedbackDeduction): string {
  * @returns The text.
  */
 export function formatFeedbackText(feedback: Feedback): string {
+  const { labels } = feedback;
   const sections = [
     [
       `*${feedback.title}*`,
-      `${feedbackLabels.examDate} : ${feedback.examDate}`,
-      `*${feedbackLabels.totalScore} : ${feedback.totalScore}*`,
+      `${labels.examDate}${labels.colon}${feedback.examDate}`,
+      `*${labels.totalScore}${labels.colon}${feedback.totalScore}*`,
     ],
   ];
   if (feedback.anomalies.length > 0) {
     sections.push([
-      `*${feedbackLabels.anomalies}*`,
+      `*${labels.anomalies}*`,
       ...feedback.anomalies.map((anomaly) => `- ${anomaly}`),
     ]);
   }
   if (feedback.overview) {
-    sections.push([`*${feedbackLabels.overview}*`, feedback.overview]);
+    sections.push([`*${labels.overview}*`, feedback.overview]);
   }
-  sections.push([`*${feedbackLabels.criteria}*`]);
+  sections.push([`*${labels.criteria}*`]);
   for (const criterion of feedback.criteria) {
     sections.push([
-      `*${criterion.name} : ${criterion.score}*`,
+      `*${criterion.name}${labels.colon}${criterion.score}*`,
       criterion.level,
       ...(criterion.overview ? [criterion.overview] : []),
       ...(criterion.deductions.length > 0
         ? [
-            `${feedbackLabels.deductions} :`,
-            ...criterion.deductions.map(formatDeduction),
+            `${labels.deductions}${labels.colon.trimEnd()}`,
+            ...criterion.deductions.map((deduction) =>
+              formatDeduction(deduction, labels),
+            ),
           ]
-        : [feedbackLabels.noDeductions]),
+        : [labels.noDeductions]),
     ]);
   }
   return sections.map((lines) => lines.join("\n")).join("\n\n");
