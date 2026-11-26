@@ -1,10 +1,17 @@
 import { v } from "convex/values";
+import {
+  type AnalyticsCriterion,
+  analyticsCriteria,
+  type MistakeCategory,
+  type MistakeCategoryId,
+} from "./analytics-criteria";
 import type { Criterion, Rubric } from "./base";
 import { newB1 } from "./new-b1";
 import { newB2 } from "./new-b2";
 import { oldB1 } from "./old-b1";
 import { oldB2 } from "./old-b2";
 
+export * from "./analytics-criteria";
 export * from "./base";
 
 export const rubrics = [oldB1, oldB2, newB1, newB2] as const;
@@ -34,6 +41,67 @@ export const criterionIdValidator = v.union(
 export const anomalyIdValidator = v.union(
   ...Array.from(anomalyIds, (id) => v.literal(id)),
 );
+
+const mistakeCategories = analyticsCriteria.flatMap<MistakeCategory>(
+  (analyticsCriterion) => analyticsCriterion.categories,
+);
+
+const mistakeCategoryIds = analyticsCriteria.flatMap<MistakeCategoryId>(
+  (analyticsCriterion) =>
+    analyticsCriterion.categories.map((category) => category.id),
+);
+
+export const mistakeCategoryIdValidator = v.union(
+  ...mistakeCategoryIds.map((id) => v.literal(id)),
+);
+
+/**
+ * Finds the analytics criterion that a rubric criterion counts towards.
+ *
+ * @param criterion The rubric criterion.
+ * @returns The analytics criterion.
+ * @throws If no analytics criterion has the ID named by the criterion.
+ */
+export function getAnalyticsCriterion(
+  criterion: Criterion,
+): AnalyticsCriterion {
+  const analyticsCriterion = analyticsCriteria.find(
+    (candidate) => candidate.id === criterion.analyticsCriterionId,
+  );
+  if (!analyticsCriterion) {
+    throw new Error(
+      `Unknown analytics criterion: ${criterion.analyticsCriterionId}`,
+    );
+  }
+  return analyticsCriterion;
+}
+
+/**
+ * Lists the mistake categories a rubric criterion allows, which are those of its analytics criterion.
+ *
+ * @param criterion The rubric criterion.
+ * @returns The allowed mistake categories.
+ */
+export function getMistakeCategories(
+  criterion: Criterion,
+): readonly MistakeCategory[] {
+  return getAnalyticsCriterion(criterion).categories;
+}
+
+/**
+ * Finds a mistake category by its ID.
+ *
+ * @param id The mistake category ID.
+ * @returns The mistake category.
+ * @throws If no mistake category has this ID.
+ */
+export function getMistakeCategory(id: MistakeCategoryId): MistakeCategory {
+  const category = mistakeCategories.find((candidate) => candidate.id === id);
+  if (!category) {
+    throw new Error(`Unknown mistake category: ${id}`);
+  }
+  return category;
+}
 
 /**
  * Finds a rubric by its ID.

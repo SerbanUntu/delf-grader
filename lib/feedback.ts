@@ -1,7 +1,7 @@
 import { formatDate, formatNumber } from "./format";
 import type { GradingResult } from "./grading";
 import { type FeedbackLanguage, legacyFeedbackLanguage } from "./languages";
-import { getLevelLabel, getRubric } from "./rubrics";
+import { getLevelLabel, getMistakeCategory, getRubric } from "./rubrics";
 import { maxTotalScore } from "./scores";
 
 /**
@@ -58,6 +58,7 @@ export const feedbackLabels: Record<FeedbackLanguage, FeedbackLabels> = {
 export interface FeedbackDeduction {
   points: string;
   reason: string;
+  categories: string[];
   isAutomatic: boolean;
 }
 
@@ -127,6 +128,9 @@ export function buildFeedback({
           deductions: criterionResult.deductions.map((deduction) => ({
             points: `-${formatNumber(deduction.points)}`,
             reason: deduction.reason,
+            categories: (deduction.categories ?? []).map(
+              (categoryId) => getMistakeCategory(categoryId).frenchName,
+            ),
             isAutomatic: deduction.isAutomatic,
           })),
         },
@@ -136,7 +140,7 @@ export function buildFeedback({
 }
 
 /**
- * Writes the text of a deduction, such as "-1 : Le verbe n'est pas conjugué. (automatique)".
+ * Writes the text of a deduction, such as "-1 (Conjugaison) : Le verbe n'est pas conjugué." or "-1 : Le texte compte 150 mots. (automatique)".
  *
  * @param deduction The deduction.
  * @param labels The fixed text in the language of the feedback.
@@ -146,8 +150,12 @@ export function formatDeduction(
   deduction: FeedbackDeduction,
   labels: FeedbackLabels,
 ): string {
+  const categories =
+    deduction.categories.length > 0
+      ? ` (${deduction.categories.join(", ")})`
+      : "";
   const automatic = deduction.isAutomatic ? ` (${labels.automatic})` : "";
-  return `${deduction.points}${labels.colon}${deduction.reason}${automatic}`;
+  return `${deduction.points}${categories}${labels.colon}${deduction.reason}${automatic}`;
 }
 
 /**

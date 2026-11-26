@@ -1,3 +1,5 @@
+import type { AnalyticsCriterionId } from "./analytics-criteria";
+
 export type CefrLevel = "B1" | "B2";
 
 export interface ScoreLevel {
@@ -16,6 +18,7 @@ export interface Criterion {
   englishSubtitle: string;
   maxScore: number;
   levels: readonly ScoreLevel[];
+  analyticsCriterionId: AnalyticsCriterionId;
 }
 
 export interface Anomaly {

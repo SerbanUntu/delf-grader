@@ -25,6 +25,7 @@ export const oldB2 = {
       englishSubtitle: "Fits the situation and text type in the prompt",
       maxScore: 1,
       levels: halfPointLevels(1, "B2"),
+      analyticsCriterionId: "task",
     },
     {
       id: "length",
@@ -32,6 +33,7 @@ export const oldB2 = {
       englishSubtitle: "Length",
       maxScore: 1,
       levels: lengthLevels(lengthSteps),
+      analyticsCriterionId: "task",
     },
     {
       id: "sociolinguistic",
@@ -39,6 +41,7 @@ export const oldB2 = {
       englishSubtitle: "Register and formality",
       maxScore: 2,
       levels: halfPointLevels(2, "B2"),
+      analyticsCriterionId: "sociolinguistic",
     },
     {
       id: "facts",
@@ -46,6 +49,7 @@ export const oldB2 = {
       englishSubtitle: "Describing facts",
       maxScore: 3,
       levels: halfPointLevels(3, "B2"),
+      analyticsCriterionId: "task",
     },
     {
       id: "argument",
@@ -53,6 +57,7 @@ export const oldB2 = {
       englishSubtitle: "Arguing a position",
       maxScore: 3,
       levels: halfPointLevels(3, "B2"),
+      analyticsCriterionId: "task",
     },
     {
       id: "coherence",
@@ -60,6 +65,7 @@ export const oldB2 = {
       englishSubtitle: "Structure and linking of ideas",
       maxScore: 4,
       levels: halfPointLevels(4, "B2"),
+      analyticsCriterionId: "coherence",
     },
     {
       id: "vocabularyRange",
@@ -67,6 +73,7 @@ export const oldB2 = {
       englishSubtitle: "Vocabulary range",
       maxScore: 2,
       levels: halfPointLevels(2, "B2"),
+      analyticsCriterionId: "vocabulary",
     },
     {
       id: "vocabularyControl",
@@ -74,6 +81,7 @@ export const oldB2 = {
       englishSubtitle: "Vocabulary control",
       maxScore: 2,
       levels: halfPointLevels(2, "B2"),
+      analyticsCriterionId: "vocabulary",
     },
     {
       id: "spelling",
@@ -81,6 +89,7 @@ export const oldB2 = {
       englishSubtitle: "Spelling",
       maxScore: 1,
       levels: halfPointLevels(1, "B2"),
+      analyticsCriterionId: "vocabulary",
     },
     {
       id: "grammar",
@@ -88,6 +97,7 @@ export const oldB2 = {
       englishSubtitle: "Grammar, tenses and moods",
       maxScore: 4,
       levels: halfPointLevels(4, "B2"),
+      analyticsCriterionId: "grammar",
     },
     {
       id: "sentences",
@@ -95,6 +105,7 @@ export const oldB2 = {
       englishSubtitle: "Sentence structure",
       maxScore: 2,
       levels: halfPointLevels(2, "B2"),
+      analyticsCriterionId: "grammar",
     },
   ],
   anomalies: [

@@ -218,7 +218,7 @@ A submission goes through four steps:
 ### Mistake categories
 
 - Every deduction made by the grader has one or more mistake categories, usually only one. Automatic deductions have none.
-- The grader must give at least one category per deduction. If it often gives several, the common instructions are tightened, and if that does not help, its output schema allows only one. The stored result keeps categories as an optional list of any length, so neither change needs a migration. Deductions saved without categories count as "Uncategorized" in analytics.
+- The grader must give at least one category per deduction. If it often gives several, the common instructions are tightened, and if that does not help, its output schema allows only one. The stored result keeps categories as an optional list of any length, so neither change needs a migration. Deductions saved without categories are left out of the category lists in analytics.
 - Categories belong to the analytics criteria and are defined with them. A rubric criterion allows the categories of its analytics criterion. Each category has an ID, a French name and an English subtitle:
   - task: Respect de la consigne (Following the instructions), Type de texte (Text type conventions), Développement des idées (Developing ideas and arguments).
   - coherence: Organisation du texte (Structure and paragraphs), Connecteurs (Linking words), Reprises et références (Referring back to ideas), Ponctuation (Punctuation).

@@ -22,7 +22,12 @@ import {
   feedbackLanguageNames,
   feedbackLanguageValidator,
 } from "../lib/languages";
-import { getRubric, type Rubric, type RubricId } from "../lib/rubrics";
+import {
+  getMistakeCategories,
+  getRubric,
+  type Rubric,
+  type RubricId,
+} from "../lib/rubrics";
 import { internal } from "./_generated/api";
 import {
   internalAction,
@@ -63,7 +68,7 @@ Grade each criterion in three steps, in this order:
 
 1. Compare: compare the paper with the descriptors of the criterion, following the rubric's rules for choosing a level or score, and write a short comparison that quotes the student's text as evidence.
 2. Choose: give the score the comparison leads to. It must be one of the criterion's allowed scores, listed under "Answer format". Base it only on the descriptors and the rubric's rules, not on an overall impression of the paper, so that grading the same paper again gives the same score.
-3. Deduct: list the deductions that explain the gap between the criterion's maximum and the chosen score. Each deduction removes a number of points and gives the reason. The points must add up exactly to the gap, and there are no deductions when the chosen score is the maximum.
+3. Deduct: list the deductions that explain the gap between the criterion's maximum and the chosen score. Each deduction removes a number of points, gives the reason and names its mistake categories. The points must add up exactly to the gap, and there are no deductions when the chosen score is the maximum.
 
 Then write the criterion's overview, as described under "Overviews".
 
@@ -74,6 +79,12 @@ Also follow these rules:
 - Mistakes in how a word is spelled in the dictionary, including accents, belong to the criterion that covers vocabulary or spelling. Mistakes in agreement, in conjugation and in the gender of articles belong to the criterion that covers grammar.
 - A text longer than the minimum length is never penalized.
 - Group mistakes of the same kind into one deduction instead of writing one deduction per mistake. Order the deductions from the most to the fewest points removed.
+
+# Mistake categories
+
+Each criterion allows the mistake categories listed under "Answer format". Give every deduction the category that fits the mistakes it covers, using the category IDs. Every deduction has at least one category.
+
+Give one category per deduction. When mistakes of different categories cost points under the same criterion, write one deduction for each category instead of one deduction with several categories. Give several categories only when a single mistake truly belongs to more than one, which is rare.
 
 # Overviews
 
@@ -97,10 +108,13 @@ Overviews are feedback for the student. They never change a score, so write them
 Report every anomaly from the rubric that applies, using the IDs listed under "Answer format", and report none if the paper has none. Do not lower any score because of an anomaly yourself, as any fixed penalty is applied by code.`;
 
 function describeAnswerFormat(rubric: Rubric): string {
-  const criteria = getGradedCriteria(rubric).map(
-    (criterion) =>
-      `- "${criterion.id}": ${criterion.frenchName} (${criterion.englishSubtitle}), out of ${formatNumber(criterion.maxScore)}. Allowed scores: ${formatAllowedScores(criterion)}.`,
-  );
+  const criteria = getGradedCriteria(rubric).map((criterion) => {
+    const categories = getMistakeCategories(criterion).map(
+      (category) =>
+        `"${category.id}" (${category.frenchName}: ${category.englishSubtitle})`,
+    );
+    return `- "${criterion.id}": ${criterion.frenchName} (${criterion.englishSubtitle}), out of ${formatNumber(criterion.maxScore)}. Allowed scores: ${formatAllowedScores(criterion)}. Mistake categories: ${categories.join(", ")}.`;
+  });
   const anomalies = rubric.anomalies.map(
     (anomaly) =>
       `- "${anomaly.id}": ${anomaly.frenchName} (${anomaly.englishSubtitle})`,
@@ -126,7 +140,7 @@ function describeFeedbackLanguage(language: FeedbackLanguage): string {
   const languageName = feedbackLanguageNames[language];
   return `# Feedback language
 
-Write every reason, every criterion overview and the paper overview in ${languageName}, because the student reads them in ${languageName}. Keep quotes of the student's text in French, exactly as transcribed, and keep DELF terms in French: criterion, level and anomaly names, and the text type. Write the comparisons in English, whatever the feedback language.`;
+Write every reason, every criterion overview and the paper overview in ${languageName}, because the student reads them in ${languageName}. Keep quotes of the student's text in French, exactly as transcribed, and keep DELF terms in French: criterion, level, anomaly and mistake category names, and the text type. Write the comparisons in English, whatever the feedback language.`;
 }
 
 function buildInstructions(rubric: Rubric, language: FeedbackLanguage): string {
@@ -217,7 +231,7 @@ async function gradeText(input: GradingInput): Promise<GradingResult> {
           { role: "assistant", content: JSON.stringify(output) },
           {
             role: "user",
-            content: `Your answer was rejected: ${error.message} Grade the paper again. For every criterion, choose one of its allowed scores and give deductions that add up exactly to the gap between its maximum and that score.`,
+            content: `Your answer was rejected: ${error.message} Grade the paper again. For every criterion, choose one of its allowed scores and give deductions that add up exactly to the gap between its maximum and that score, each with at least one of the criterion's mistake categories.`,
           },
         );
       }

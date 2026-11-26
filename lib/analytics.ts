@@ -1,6 +1,62 @@
 import type { GradingResult } from "./grading";
-import type { AnomalyId, CriterionId, Rubric } from "./rubrics";
+import type {
+  AnomalyId,
+  CriterionId,
+  MistakeCategoryId,
+  Rubric,
+} from "./rubrics";
 import { roundScore } from "./scores";
+
+type Deduction = GradingResult["criteria"][number]["deductions"][number];
+
+/**
+ * How often a mistake category appears in a group of submissions.
+ */
+export interface MistakeCategoryCount {
+  categoryId: MistakeCategoryId;
+  submissionCount: number;
+  pointsRemoved: number;
+}
+
+/**
+ * Counts, for each mistake category, how many submissions have a deduction in it and the points those deductions removed. Automatic deductions and deductions saved without categories are not counted.
+ *
+ * @param deductionsBySubmission The deductions of each submission.
+ * @returns The categories found, sorted from the most to the fewest submissions.
+ */
+export function countMistakeCategories(
+  deductionsBySubmission: Deduction[][],
+): MistakeCategoryCount[] {
+  const counts = new Map<MistakeCategoryId, MistakeCategoryCount>();
+  for (const deductions of deductionsBySubmission) {
+    const seen = new Set<MistakeCategoryId>();
+    for (const deduction of deductions) {
+      if (deduction.isAutomatic) {
+        continue;
+      }
+      for (const categoryId of deduction.categories ?? []) {
+        const count = counts.get(categoryId) ?? {
+          categoryId,
+          submissionCount: 0,
+          pointsRemoved: 0,
+        };
+        count.pointsRemoved = roundScore(
+          count.pointsRemoved + deduction.points,
+        );
+        if (!seen.has(categoryId)) {
+          seen.add(categoryId);
+          count.submissionCount++;
+        }
+        counts.set(categoryId, count);
+      }
+    }
+  }
+  return Array.from(counts.values()).toSorted(
+    (first, second) =>
+      second.submissionCount - first.submissionCount ||
+      second.pointsRemoved - first.pointsRemoved,
+  );
+}
 
 /**
  * The aggregates of one rubric criterion over the graded submissions of a session.
@@ -11,6 +67,7 @@ export interface CriterionAnalytics {
   totalPointsLost: number;
   averagePointsLost: number;
   scoreCounts: { score: number; count: number }[];
+  mistakeCategories: MistakeCategoryCount[];
 }
 
 /**
@@ -35,12 +92,13 @@ export function computeSessionAnalytics(
 ): SessionAnalytics {
   const graded = results.filter((result) => result.rubricId === rubric.id);
   const criteria = rubric.criteria.map((criterion): CriterionAnalytics => {
-    const scores = graded.flatMap(
+    const criterionResults = graded.flatMap(
       (result) =>
         result.criteria.find(
           (candidate) => candidate.criterionId === criterion.id,
-        )?.score ?? [],
+        ) ?? [],
     );
+    const scores = criterionResults.map((result) => result.score);
     const pointsLost = scores.map((score) =>
       roundScore(criterion.maxScore - score),
     );
@@ -57,6 +115,9 @@ export function computeSessionAnalytics(
         score: level.score,
         count: scores.filter((score) => score === level.score).length,
       })),
+      mistakeCategories: countMistakeCategories(
+        criterionResults.map((result) => result.deductions),
+      ),
     };
   });
   const anomalies = rubric.anomalies.map((anomaly) => ({

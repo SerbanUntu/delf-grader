@@ -25,6 +25,7 @@ export const oldB1 = {
       englishSubtitle: "Fits the situation in the prompt",
       maxScore: 1,
       levels: halfPointLevels(1, "B1"),
+      analyticsCriterionId: "task",
     },
     {
       id: "length",
@@ -32,6 +33,7 @@ export const oldB1 = {
       englishSubtitle: "Length",
       maxScore: 1,
       levels: lengthLevels(lengthSteps),
+      analyticsCriterionId: "task",
     },
     {
       id: "facts",
@@ -39,6 +41,7 @@ export const oldB1 = {
       englishSubtitle: "Describing facts",
       maxScore: 4,
       levels: halfPointLevels(4, "B1"),
+      analyticsCriterionId: "task",
     },
     {
       id: "opinion",
@@ -46,6 +49,7 @@ export const oldB1 = {
       englishSubtitle: "Expressing ideas and opinions",
       maxScore: 4,
       levels: halfPointLevels(4, "B1"),
+      analyticsCriterionId: "task",
     },
     {
       id: "coherence",
@@ -53,6 +57,7 @@ export const oldB1 = {
       englishSubtitle: "Structure and linking of ideas",
       maxScore: 3,
       levels: halfPointLevels(3, "B1"),
+      analyticsCriterionId: "coherence",
     },
     {
       id: "vocabularyRange",
@@ -60,6 +65,7 @@ export const oldB1 = {
       englishSubtitle: "Vocabulary range",
       maxScore: 2,
       levels: halfPointLevels(2, "B1"),
+      analyticsCriterionId: "vocabulary",
     },
     {
       id: "vocabularyControl",
@@ -67,6 +73,7 @@ export const oldB1 = {
       englishSubtitle: "Vocabulary control",
       maxScore: 2,
       levels: halfPointLevels(2, "B1"),
+      analyticsCriterionId: "vocabulary",
     },
     {
       id: "spelling",
@@ -74,6 +81,7 @@ export const oldB1 = {
       englishSubtitle: "Spelling, punctuation and layout",
       maxScore: 2,
       levels: halfPointLevels(2, "B1"),
+      analyticsCriterionId: "vocabulary",
     },
     {
       id: "sentences",
@@ -81,6 +89,7 @@ export const oldB1 = {
       englishSubtitle: "Sentence structure",
       maxScore: 2,
       levels: halfPointLevels(2, "B1"),
+      analyticsCriterionId: "grammar",
     },
     {
       id: "tensesAndMoods",
@@ -88,6 +97,7 @@ export const oldB1 = {
       englishSubtitle: "Tenses and moods",
       maxScore: 2,
       levels: halfPointLevels(2, "B1"),
+      analyticsCriterionId: "grammar",
     },
     {
       id: "morphosyntax",
@@ -95,6 +105,7 @@ export const oldB1 = {
       englishSubtitle: "Agreement, pronouns and verb endings",
       maxScore: 2,
       levels: halfPointLevels(2, "B1"),
+      analyticsCriterionId: "grammar",
     },
   ],
   anomalies: [

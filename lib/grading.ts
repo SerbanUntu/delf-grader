@@ -12,6 +12,9 @@ import {
   type Criterion,
   type CriterionId,
   criterionIdValidator,
+  getMistakeCategories,
+  type MistakeCategoryId,
+  mistakeCategoryIdValidator,
   type Rubric,
   type RubricId,
   rubricIdValidator,
@@ -32,6 +35,7 @@ export const gradingResultValidator = v.object({
         v.object({
           points: v.number(),
           reason: v.string(),
+          categories: v.optional(v.array(mistakeCategoryIdValidator)),
           isAutomatic: v.boolean(),
         }),
       ),
@@ -89,14 +93,24 @@ export function getGradedCriteria(rubric: Rubric): Criterion[] {
  */
 export function buildGraderSchema(rubric: Rubric, language: FeedbackLanguage) {
   const languageName = feedbackLanguageNames[language];
-  const deduction = z.object({
-    points: z.number().describe("The number of points removed, above 0."),
-    reason: z
-      .string()
-      .describe(
-        `Why the points are removed, in ${languageName}, quoting the student's text in French.`,
-      ),
-  });
+  const buildDeduction = (criterion: Criterion) =>
+    z.object({
+      points: z.number().describe("The number of points removed, above 0."),
+      reason: z
+        .string()
+        .describe(
+          `Why the points are removed, in ${languageName}, quoting the student's text in French.`,
+        ),
+      categories: z
+        .array(
+          z.enum(
+            getMistakeCategories(criterion).map((category) => category.id),
+          ),
+        )
+        .describe(
+          "The IDs of the mistake categories of the deduction, usually only one and never none.",
+        ),
+    });
   return z.object({
     textType: z
       .string()
@@ -123,7 +137,7 @@ export function buildGraderSchema(rubric: Rubric, language: FeedbackLanguage) {
                   `The score of the chosen level, one of ${formatAllowedScores(criterion)}.`,
                 ),
               deductions: z
-                .array(deduction)
+                .array(buildDeduction(criterion))
                 .describe(
                   "The deductions that explain the gap between the maximum and the chosen score. Empty when the score is the maximum.",
                 ),
@@ -303,6 +317,11 @@ function scoreFromAnswer(
         `A deduction under "${criterion.id}" removes ${pluralizePoints(deduction.points)}, but every deduction must remove more than 0 points.`,
       );
     }
+    if (deduction.categories.length === 0) {
+      throw new GraderAnswerError(
+        `A deduction under "${criterion.id}" has no mistake category, but every deduction must have at least one.`,
+      );
+    }
   }
   const removed = roundScore(
     deductions.reduce((sum, { points }) => sum + points, 0),
@@ -320,6 +339,7 @@ function scoreFromAnswer(
     deductions: deductions.map((deduction) => ({
       points: roundScore(deduction.points),
       reason: deduction.reason,
+      categories: [...new Set(deduction.categories)] as MistakeCategoryId[],
       isAutomatic: false,
     })),
   };

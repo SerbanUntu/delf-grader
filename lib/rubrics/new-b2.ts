@@ -14,6 +14,7 @@ export const newB2 = {
       englishSubtitle: "Task completion",
       maxScore: 5,
       levels: bandLevels("B2"),
+      analyticsCriterionId: "task",
     },
     {
       id: "coherence",
@@ -21,6 +22,7 @@ export const newB2 = {
       englishSubtitle: "Structure and linking of ideas",
       maxScore: 5,
       levels: bandLevels("B2"),
+      analyticsCriterionId: "coherence",
     },
     {
       id: "sociolinguistic",
@@ -28,6 +30,7 @@ export const newB2 = {
       englishSubtitle: "Register and social conventions",
       maxScore: 5,
       levels: bandLevels("B2"),
+      analyticsCriterionId: "sociolinguistic",
     },
     {
       id: "vocabulary",
@@ -35,6 +38,7 @@ export const newB2 = {
       englishSubtitle: "Vocabulary and spelling",
       maxScore: 5,
       levels: bandLevels("B2"),
+      analyticsCriterionId: "vocabulary",
     },
     {
       id: "grammar",
@@ -42,6 +46,7 @@ export const newB2 = {
       englishSubtitle: "Grammar",
       maxScore: 5,
       levels: bandLevels("B2"),
+      analyticsCriterionId: "grammar",
     },
   ],
   anomalies: [

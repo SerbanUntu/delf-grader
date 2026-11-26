@@ -25,6 +25,7 @@ import {
 import {
   type Criterion,
   getLevelLabel,
+  getMistakeCategory,
   getRubric,
   type Rubric,
 } from "@/lib/rubrics";
@@ -334,14 +335,36 @@ function CriterionView({
               <span className="mt-0.5 shrink-0 rounded-md bg-muted px-2 py-0.5 font-semibold tabular-nums">
                 -{formatNumber(deduction.points)}
               </span>
-              <span className="min-w-0 wrap-break-word">
-                {deduction.reason}
-                {deduction.isAutomatic && (
-                  <span className="ml-2 text-sm text-muted-foreground">
-                    (automatic)
-                  </span>
+              <div className="min-w-0">
+                <p className="wrap-break-word">
+                  {deduction.reason}
+                  {deduction.isAutomatic && (
+                    <span className="ml-2 text-sm text-muted-foreground">
+                      (automatic)
+                    </span>
+                  )}
+                </p>
+                {deduction.categories && deduction.categories.length > 0 && (
+                  <ul className="mt-1.5 flex flex-wrap gap-1.5">
+                    {deduction.categories.map((categoryId) => {
+                      const category = getMistakeCategory(categoryId);
+                      return (
+                        <li
+                          key={category.id}
+                          className="rounded-md border px-2 py-0.5 text-sm"
+                        >
+                          <span className="font-medium">
+                            {category.frenchName}
+                          </span>{" "}
+                          <span className="text-muted-foreground">
+                            ({category.englishSubtitle})
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
                 )}
-              </span>
+              </div>
             </li>
           ))}
         </ul>
