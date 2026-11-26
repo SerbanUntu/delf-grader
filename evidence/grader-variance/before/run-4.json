@@ -1,0 +1,254 @@
+{
+  "run": 4,
+  "rubricId": "new-b2",
+  "wordCount": 284,
+  "startedAt": "2026-11-26T18:36:08.274Z",
+  "durationMs": 10295,
+  "attempts": 1,
+  "error": null,
+  "result": {
+    "rubricId": "new-b2",
+    "textType": "message sur un forum",
+    "anomalies": [],
+    "criteria": [
+      {
+        "criterionId": "task",
+        "score": 3,
+        "deductions": [
+          {
+            "points": 2,
+            "reason": "The answer is clear and argued, but it gives only one real bad experience (\"un ami à moi a publié une photo de lui devant son école\"). The other examples are hypothetical (\"Imagine que tu publies une photo embarrassante\", \"si tu publies des photos d'une fête\"), and the reasoning stays fairly simple, short of the elaborate argument B2+ requires.",
+            "isAutomatic": false
+          }
+        ]
+      },
+      {
+        "criterionId": "coherence",
+        "score": 5,
+        "deductions": []
+      },
+      {
+        "criterionId": "sociolinguistic",
+        "score": 5,
+        "deductions": []
+      },
+      {
+        "criterionId": "vocabulary",
+        "score": 5,
+        "deductions": []
+      },
+      {
+        "criterionId": "grammar",
+        "score": 5,
+        "deductions": []
+      }
+    ],
+    "totalScore": 23
+  },
+  "exchanges": [
+    {
+      "url": "https://api.anthropic.com/v1/messages",
+      "request": {
+        "model": "claude-opus-5-5",
+        "max_tokens": 128000,
+        "output_config": {
+          "format": {
+            "type": "json_schema",
+            "schema": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "textType": {
+                  "description": "The text type the exam question asks for, in French, such as \"lettre formelle\".",
+                  "type": "string"
+                },
+                "anomalies": {
+                  "description": "The IDs of the anomalies found in the paper.",
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "wrongTopic",
+                      "wrongTextType",
+                      "wrongTopicAndTextType"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "deductions": {
+                  "type": "object",
+                  "properties": {
+                    "task": {
+                      "description": "Réalisation de la tâche",
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "points": {
+                            "description": "The number of points removed, above 0.",
+                            "type": "number"
+                          },
+                          "reason": {
+                            "description": "Why the points are removed, in English, quoting the student's text in French.",
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": ["points", "reason"]
+                      }
+                    },
+                    "coherence": {
+                      "description": "Cohérence et cohésion",
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "points": {
+                            "description": "The number of points removed, above 0.",
+                            "type": "number"
+                          },
+                          "reason": {
+                            "description": "Why the points are removed, in English, quoting the student's text in French.",
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": ["points", "reason"]
+                      }
+                    },
+                    "sociolinguistic": {
+                      "description": "Adéquation sociolinguistique",
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "points": {
+                            "description": "The number of points removed, above 0.",
+                            "type": "number"
+                          },
+                          "reason": {
+                            "description": "Why the points are removed, in English, quoting the student's text in French.",
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": ["points", "reason"]
+                      }
+                    },
+                    "vocabulary": {
+                      "description": "Lexique",
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "points": {
+                            "description": "The number of points removed, above 0.",
+                            "type": "number"
+                          },
+                          "reason": {
+                            "description": "Why the points are removed, in English, quoting the student's text in French.",
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": ["points", "reason"]
+                      }
+                    },
+                    "grammar": {
+                      "description": "Morphosyntaxe",
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "points": {
+                            "description": "The number of points removed, above 0.",
+                            "type": "number"
+                          },
+                          "reason": {
+                            "description": "Why the points are removed, in English, quoting the student's text in French.",
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": ["points", "reason"]
+                      }
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "task",
+                    "coherence",
+                    "sociolinguistic",
+                    "vocabulary",
+                    "grammar"
+                  ]
+                }
+              },
+              "additionalProperties": false,
+              "required": ["textType", "anomalies", "deductions"]
+            }
+          }
+        },
+        "system": [
+          {
+            "type": "text",
+            "text": "You are an experienced DELF examiner. You grade one Production écrite paper, written by a student who is learning French, using the rubric below.\n\n# Input\n\nYou receive the exam question, the word count of the student's text and the student's text. The word count is computed by code, so do not count words yourself. The paper was handwritten and then transcribed, so the text is exactly what the student wrote, mistakes included.\n\n# Text type\n\nInfer the text type the exam question asks for. DELF questions almost always name it. Write it in French and in lowercase, as the question names it, for example \"courriel\", \"lettre formelle\", \"article\", \"message sur un forum\", \"essai\" or \"contribution à un débat\". If the question does not name it, choose the type that best fits the task.\n\nCheck the paper against the conventions of its text type:\n\n- Courriel or lettre amicale: a greeting and a closing suited to the reader (for example \"Salut Marie,\" and \"Bises,\"), tutoiement or vouvoiement suited to the relationship, and a signature. The register is informal or neutral.\n- Lettre formelle (lettre de réclamation, de motivation, de demande, etc.): the sender's and the recipient's details, place and date, a subject line (\"Objet : ...\"), an opening such as \"Madame, Monsieur,\", vouvoiement throughout, a formal closing (formule de politesse, such as \"Veuillez agréer, Madame, Monsieur, l'expression de mes salutations distinguées.\") and a signature. The register is formal.\n- Article, including article critique: a title, an introduction that presents the topic and draws the reader in, developed paragraphs and a conclusion. It addresses a wide readership, usually in a neutral register.\n- Message sur un forum or blog: replies to the topic or to an earlier message, in a personal tone, and may be signed with a pseudonym. Letter formulas are not required.\n- Essai or contribution à un débat: states the issue (la problématique) and the writer's position, develops structured arguments with examples, and ends with a conclusion, following an introduction, développement and conclusion.\n- Récit or témoignage: tells events or experiences in a clear order, mostly in past tenses.\n\nFor any other text type, use the conventions a DELF examiner would expect.\n\n# Deductions\n\nFor each criterion, start from its maximum score and list the deductions. Each deduction removes a number of points and gives the reason.\n\n- Leave the list of a criterion empty only when the paper fully meets the highest level of that criterion.\n- The points removed from a criterion must leave one of its allowed scores, listed under \"Answer format\". Any other total is rejected.\n- Grade each criterion only on what it covers, and do not remove points twice for the same mistake under two criteria.\n- Group mistakes of the same kind into one deduction instead of writing one deduction per mistake. Order the deductions from the most to the fewest points removed.\n- Judge the paper against the level the rubric targets, not against a native speaker. Mistakes that the descriptors accept at this level do not remove points on their own.\n\n# Reasons\n\n- Write each reason in English, in one or two short sentences, for a teacher who may not speak French.\n- Quote the student's text in French, exactly as transcribed, between double quotes. When there is a correction, give it after the quote, for example: \"il faut que je vais\" should be \"il faut que j'aille\" (subjunctive after \"il faut que\").\n- When one deduction covers several mistakes of the same kind, quote up to three examples.\n\n# Illegible words\n\n[illegible] marks a word that could not be read from the handwriting. It says nothing about the student's French. Do not remove points for it, do not quote it as a mistake and do not guess what it says. Grade every criterion on the readable parts of the text.\n\n# Anomalies\n\nReport every anomaly from the rubric that applies, using the IDs listed under \"Answer format\", and report none if the paper has none. Do not lower any score because of an anomaly yourself, as any fixed penalty is applied by code.\n\n# Rubric\n\nYou are grading a DELF B2 Production écrite paper with the grid used since 01/09/2022.\n\n## Task\n\nThe candidate writes one text in 60 minutes, taking and arguing a personal position. Possible text types include contributions to a debate, formal letters and critical articles.\n\n## Bands\n\nFor each criterion, choose exactly one band: \"Non répondu ou production insuffisante\", \"En dessous du niveau ciblé\", \"Au niveau ciblé B2\" or \"Au niveau ciblé B2+\". Use \"Non répondu ou production insuffisante\" only when the paper gives nothing to assess for that criterion. The descriptors of the other bands are below.\n\n## Length\n\nPapers far below the minimum length are handled automatically. For any other paper below the minimum length, there is no fixed deduction: judge the shortfall as part of \"Réalisation de la tâche\".\n\n## Criteria\n\n### Réalisation de la tâche (compétence pragmatique)\n\n- En dessous du niveau ciblé: writes a connected, non-complex text related to the task, in which the writer simply states opinions, tastes and preferences. Can use concrete examples to explain the opinion.\n- Au niveau ciblé B2: develops a clear written argument related to the task, giving reasons for or against and explaining the advantages and disadvantages of different options. Supports arguments with examples suited to the situation.\n- Au niveau ciblé B2+: writes a text related to the task that clearly presents the issue (la problématique), the writer's opinion, and any proposals or conclusions. Integrates various arguments, justifications and examples in an elaborate way, suited to the situation and taking the reader's point of view into account.\n\nAlso check that the text type and the topic match the prompt, that the text meets the minimum length, and that it takes a clear position with arguments and precise examples.\n\n### Cohérence et cohésion (compétence pragmatique)\n\n- En dessous du niveau ciblé: writes a connected text using a few basic linking words. Layout and punctuation are not always used well.\n- Au niveau ciblé B2: writes a generally well-organized text using a range of linking words and connectors. Layout and punctuation help understanding, despite occasional errors (for example one idea split across two paragraphs).\n- Au niveau ciblé B2+: writes a clear, fluent, well-structured text with varied connectors. Layout and punctuation are logical and make reading easier.\n\nThe expected structure is a logical order of ideas with a beginning and an end (introduction, développement, conclusion).\n\n### Adéquation sociolinguistique (compétence sociolinguistique)\n\n- En dessous du niveau ciblé: uses the most common expressions and speech acts in a register broadly suited to the situation and/or reader.\n- Au niveau ciblé B2: adapts the text to the reader and to the register of the task. Any slips are rare and do not create tension for the reader.\n- Au niveau ciblé B2+: adjusts the level of formality flexibly to the situation and/or reader, and keeps that level throughout the whole text.\n\n### Lexique (compétence linguistique: vocabulary range, control and spelling)\n\n- En dessous du niveau ciblé: correctly uses simple vocabulary, but its range is still too limited for common social issues. Uses paraphrase for more complex ideas or words. Spelling errors are frequent and/or typical of a level below B2.\n- Au niveau ciblé B2: appropriately uses a wide range of vocabulary related to the writer's field of interest and common social issues. Can vary wording to avoid repetition, but some errors in word use may still occur and hinder understanding. Spelling is fairly accurate, with errors that do not hinder understanding.\n- Au niveau ciblé B2+: has a broad vocabulary across varied fields, and easily gets around gaps with synonyms or paraphrase. Occasional non-systematic awkward word choices may occur but never hinder understanding. Spelling is accurate, though errors may occur with more complex vocabulary.\n\n### Morphosyntaxe (compétence linguistique: grammar)\n\n- En dessous du niveau ciblé: controls simple structures and forms, and is relatively accurate with common complex structures, but struggles to stay accurate when expressing more elaborate ideas.\n- Au niveau ciblé B2: good grammatical control of the most frequent complex structures, although these are not very varied. Errors may occur in more elaborate structures but do not lead to misunderstandings.\n- Au niveau ciblé B2+: good grammatical control overall, with varied phrasing. Occasional non-systematic errors may still occur but never hinder understanding.\n\n## Anomalies\n\nReport every anomaly that applies. The score caps they lead to are applied automatically, so grade each criterion on what the text shows.\n\n- Hors-sujet thématique: the text type is right, but the topic is wrong.\n- Hors-sujet discursif: the topic is right, but the text type is wrong (for example an article instead of a formal letter).\n- Hors-sujet complet: both the topic and the text type are wrong. Report it instead of the two anomalies above.\n\n# Answer format\n\nGive the deductions under these criterion IDs:\n\n- \"task\": Réalisation de la tâche (Task completion), out of 5. Allowed scores: 0, 1, 3, 5.\n- \"coherence\": Cohérence et cohésion (Structure and linking of ideas), out of 5. Allowed scores: 0, 1, 3, 5.\n- \"sociolinguistic\": Adéquation sociolinguistique (Register and social conventions), out of 5. Allowed scores: 0, 1, 3, 5.\n- \"vocabulary\": Lexique (Vocabulary and spelling), out of 5. Allowed scores: 0, 1, 3, 5.\n- \"grammar\": Morphosyntaxe (Grammar), out of 5. Allowed scores: 0, 1, 3, 5.\n\nAnomaly IDs:\n\n- \"wrongTopic\": Hors-sujet thématique (Wrong topic)\n- \"wrongTextType\": Hors-sujet discursif (Wrong text type)\n- \"wrongTopicAndTextType\": Hors-sujet complet (Wrong topic and text type)",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          }
+        ],
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "<exam_question>\n@Safir\nCoucou tout le monde ! J’ai décidé d’être plus actif sur les réseaux sociaux et de partager des photos de ma vie avec plus de personnes du monde entier. Comme ça, je suis sûr que je pourrai me faire plein d’amis partout !\n\nVous lisez ce message sur un forum de discussion. Vous répondez à Safir pour le faire changer d’avis. Vous lui donnez des exemples de mauvaises expériences pour lui démontrer que la visibilité sur les réseaux sociaux n’est pas toujours une bonne chose. (250 mots minimum)\n</exam_question>\n\n<word_count>\n284 words. The rubric asks for at least 250 words.\n</word_count>\n\n<student_text>\nSalut Safir!\n\nJe comprends que tu veuilles être plus actif sur les réseaux sociaux et te faire des amis partout dans le monde. C'est vrai que les réseaux sociaux permettent de rencontrer des personnes intéressantes. Cependant, je pense que partager trop de photos de sa vie peut avoir des conséquences négatives.\n\nTout d'abord, il faut faire attention aux inconnus sur internet. Par exemple, un ami à moi a publié une photo de lui devant son école. Quelques jours plus tard, une personne qu'il ne connaissait pas lui a envoyé des messages en disant qu'elle savait où il étudiait. Il a eu peur et il a supprimé la photo. Cela montre que certaines personnes peuvent utiliser nos publications de manière dangereuse.\n\nEnsuite, les photos publiées sur internet peuvent rester en ligne très longtemps. Imagine que tu publies une photo embarrassante pour faire rire tes amis. Même si tu la supprime après, quelqu'un peut l'avoir enregistré et la partager avec d'autres personnes. Tu pourrais regretter cette publication plus tard.\n\nDe plus, les réseaux sociaux peuvent provoquer des problèmes entre amis. Par exemple, si tu publies des photos d'une fête sans inviter certaines personnes, elles peuvent se sentir exclues et se fâcher contre toi. Une simple publication peut donc créer des conflits.\n\nBien sûr, les réseaux sociaux sont utiles pour garder le contact avec les autres et découvrir des nouvelles cultures. Mais il faut réfléchir avant de publier des photos et éviter de partager trop d'informations personnelles.\n\nPour conclure, je te conseille d'être prudent. Tu peux te faire des amis sur internet sans montrer tous les détails de ta vie. Après tout, la sécurité et la vie privée sont beaucoup plus importantes que le nombre d'abonnés!\n\nAmélie\n</student_text>"
+              }
+            ]
+          }
+        ]
+      },
+      "status": 200,
+      "durationMs": 10287,
+      "response": {
+        "model": "claude-opus-5-5",
+        "id": "msg_011ChS2JBAgcioJ49WLqkifg",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "",
+            "signature": "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"
+          },
+          {
+            "type": "text",
+            "text": "{\"textType\":\"message sur un forum\",\"anomalies\":[],\"deductions\":{\"task\":[{\"points\":2,\"reason\":\"The answer is clear and argued, but it gives only one real bad experience (\\\"un ami à moi a publié une photo de lui devant son école\\\"). The other examples are hypothetical (\\\"Imagine que tu publies une photo embarrassante\\\", \\\"si tu publies des photos d'une fête\\\"), and the reasoning stays fairly simple, short of the elaborate argument B2+ requires.\"}],\"coherence\":[],\"sociolinguistic\":[],\"vocabulary\":[],\"grammar\":[]}}"
+          }
+        ],
+        "container": null,
+        "stop_reason": "end_turn",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 959,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 4706,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 770,
+          "output_tokens_details": {
+            "thinking_tokens": 563
+          },
+          "service_tier": "standard",
+          "inference_geo": "global",
+          "speed": "standard"
+        },
+        "diagnostics": null
+      }
+    }
+  ]
+}

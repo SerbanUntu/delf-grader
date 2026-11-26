@@ -1,4 +1,4 @@
-import { bandLevels, type Rubric } from "./base";
+import { bandLevels, newGridLevelRules, type Rubric } from "./base";
 
 export const newB2 = {
   id: "new-b2",
@@ -82,9 +82,7 @@ export const newB2 = {
 
 The candidate writes one text in 60 minutes, taking and arguing a personal position. Possible text types include contributions to a debate, formal letters and critical articles.
 
-## Bands
-
-For each criterion, choose exactly one band: "Non répondu ou production insuffisante", "En dessous du niveau ciblé", "Au niveau ciblé B2" or "Au niveau ciblé B2+". Use "Non répondu ou production insuffisante" only when the paper gives nothing to assess for that criterion. The descriptors of the other bands are below.
+${newGridLevelRules("B2")}
 
 ## Length
 

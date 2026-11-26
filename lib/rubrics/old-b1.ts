@@ -1,4 +1,9 @@
-import { halfPointLevels, lengthLevels, type Rubric } from "./base";
+import {
+  halfPointLevels,
+  lengthLevels,
+  oldGridScoreRules,
+  type Rubric,
+} from "./base";
 
 const lengthSteps = [
   { minimumWords: 0, score: 0 },
@@ -106,21 +111,23 @@ export const oldB1 = {
 
 The candidate writes one text in 45 minutes, expressing a personal attitude on a general topic. Possible text types include essays, letters, articles, emails and forum posts.
 
+${oldGridScoreRules("B1")}
+
 ## Length
 
 "Respect de la consigne (longueur)" is scored automatically from the word count. Do not grade it, and do not remove points for length under any other criterion. There is no other penalty for short texts.
 
 ## Criteria
 
-Each descriptor states what is expected at B1. Give the maximum score when the paper fully meets it, and remove points in proportion to how far the paper falls short of it.
-
 ### Respect de la consigne (situation)
 
 The text fits the situation in the prompt: the right topic, the right text type and the right reader.
 
+If the paper leaves out something the prompt asks for (for example one of the points it must cover), remove points under "Capacité à présenter des faits", not here.
+
 ### Capacité à présenter des faits
 
-Can describe facts, events or experiences.
+Can describe facts, events or experiences. Expect only as many facts as fit in about 160 words.
 
 ### Capacité à exprimer sa pensée
 
@@ -138,9 +145,13 @@ Has enough vocabulary to write about everyday topics, using paraphrase when need
 
 Good control of basic vocabulary, but serious errors still occur when expressing more complex ideas.
 
+Its score cannot be higher than the score of "Étendue du vocabulaire", because control of a vocabulary below the expected range is not rewarded.
+
 ### Maîtrise de l'orthographe lexicale
 
 Spelling of words, punctuation and layout are accurate enough to be followed easily most of the time.
+
+Only errors in how a word is spelled in the dictionary, including accents (for example "chateau" or "etudiant"), are penalized here. Agreement and conjugation errors (for example "un séjour magnifiques") are penalized under "Morphosyntaxe - orthographe grammaticale".
 
 ### Degré d'élaboration des phrases
 
@@ -152,7 +163,7 @@ Good control of tenses and moods, despite clear influence of the native language
 
 ### Morphosyntaxe - orthographe grammaticale
 
-Gender and number agreement, pronouns, verb endings, etc.
+Gender and number agreement, pronouns, verb endings, etc. A wrong article (for example "le table") is a gender agreement error and is penalized here, not under the vocabulary criteria.
 
 ## Anomalies
 

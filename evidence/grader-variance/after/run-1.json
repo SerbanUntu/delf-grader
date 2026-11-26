@@ -1,0 +1,329 @@
+{
+  "run": 1,
+  "rubricId": "new-b2",
+  "wordCount": 284,
+  "startedAt": "2026-11-26T18:39:25.684Z",
+  "durationMs": 17895,
+  "attempts": 1,
+  "error": null,
+  "result": {
+    "rubricId": "new-b2",
+    "textType": "message sur un forum",
+    "anomalies": [],
+    "criteria": [
+      {
+        "criterionId": "task",
+        "score": 5,
+        "deductions": []
+      },
+      {
+        "criterionId": "coherence",
+        "score": 5,
+        "deductions": []
+      },
+      {
+        "criterionId": "sociolinguistic",
+        "score": 5,
+        "deductions": []
+      },
+      {
+        "criterionId": "vocabulary",
+        "score": 5,
+        "deductions": []
+      },
+      {
+        "criterionId": "grammar",
+        "score": 5,
+        "deductions": []
+      }
+    ],
+    "totalScore": 25
+  },
+  "exchanges": [
+    {
+      "url": "https://api.anthropic.com/v1/messages",
+      "request": {
+        "model": "claude-opus-5-5",
+        "max_tokens": 128000,
+        "output_config": {
+          "effort": "high",
+          "format": {
+            "type": "json_schema",
+            "schema": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "textType": {
+                  "description": "The text type the exam question asks for, in French, such as \"lettre formelle\".",
+                  "type": "string"
+                },
+                "anomalies": {
+                  "description": "The IDs of the anomalies found in the paper.",
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "wrongTopic",
+                      "wrongTextType",
+                      "wrongTopicAndTextType"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "criteria": {
+                  "type": "object",
+                  "properties": {
+                    "task": {
+                      "description": "Réalisation de la tâche",
+                      "type": "object",
+                      "properties": {
+                        "comparison": {
+                          "description": "Two to four sentences comparing the paper with the descriptors of the chosen level and of the level above it, quoting the student's text as evidence.",
+                          "type": "string"
+                        },
+                        "score": {
+                          "description": "The score of the chosen level, one of 0, 1, 3, 5.",
+                          "type": "number"
+                        },
+                        "deductions": {
+                          "description": "The deductions that explain the gap between the maximum and the chosen score. Empty when the score is the maximum.",
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "points": {
+                                "description": "The number of points removed, above 0.",
+                                "type": "number"
+                              },
+                              "reason": {
+                                "description": "Why the points are removed, in English, quoting the student's text in French.",
+                                "type": "string"
+                              }
+                            },
+                            "additionalProperties": false,
+                            "required": ["points", "reason"]
+                          }
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": ["comparison", "score", "deductions"]
+                    },
+                    "coherence": {
+                      "description": "Cohérence et cohésion",
+                      "type": "object",
+                      "properties": {
+                        "comparison": {
+                          "description": "Two to four sentences comparing the paper with the descriptors of the chosen level and of the level above it, quoting the student's text as evidence.",
+                          "type": "string"
+                        },
+                        "score": {
+                          "description": "The score of the chosen level, one of 0, 1, 3, 5.",
+                          "type": "number"
+                        },
+                        "deductions": {
+                          "description": "The deductions that explain the gap between the maximum and the chosen score. Empty when the score is the maximum.",
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "points": {
+                                "description": "The number of points removed, above 0.",
+                                "type": "number"
+                              },
+                              "reason": {
+                                "description": "Why the points are removed, in English, quoting the student's text in French.",
+                                "type": "string"
+                              }
+                            },
+                            "additionalProperties": false,
+                            "required": ["points", "reason"]
+                          }
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": ["comparison", "score", "deductions"]
+                    },
+                    "sociolinguistic": {
+                      "description": "Adéquation sociolinguistique",
+                      "type": "object",
+                      "properties": {
+                        "comparison": {
+                          "description": "Two to four sentences comparing the paper with the descriptors of the chosen level and of the level above it, quoting the student's text as evidence.",
+                          "type": "string"
+                        },
+                        "score": {
+                          "description": "The score of the chosen level, one of 0, 1, 3, 5.",
+                          "type": "number"
+                        },
+                        "deductions": {
+                          "description": "The deductions that explain the gap between the maximum and the chosen score. Empty when the score is the maximum.",
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "points": {
+                                "description": "The number of points removed, above 0.",
+                                "type": "number"
+                              },
+                              "reason": {
+                                "description": "Why the points are removed, in English, quoting the student's text in French.",
+                                "type": "string"
+                              }
+                            },
+                            "additionalProperties": false,
+                            "required": ["points", "reason"]
+                          }
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": ["comparison", "score", "deductions"]
+                    },
+                    "vocabulary": {
+                      "description": "Lexique",
+                      "type": "object",
+                      "properties": {
+                        "comparison": {
+                          "description": "Two to four sentences comparing the paper with the descriptors of the chosen level and of the level above it, quoting the student's text as evidence.",
+                          "type": "string"
+                        },
+                        "score": {
+                          "description": "The score of the chosen level, one of 0, 1, 3, 5.",
+                          "type": "number"
+                        },
+                        "deductions": {
+                          "description": "The deductions that explain the gap between the maximum and the chosen score. Empty when the score is the maximum.",
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "points": {
+                                "description": "The number of points removed, above 0.",
+                                "type": "number"
+                              },
+                              "reason": {
+                                "description": "Why the points are removed, in English, quoting the student's text in French.",
+                                "type": "string"
+                              }
+                            },
+                            "additionalProperties": false,
+                            "required": ["points", "reason"]
+                          }
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": ["comparison", "score", "deductions"]
+                    },
+                    "grammar": {
+                      "description": "Morphosyntaxe",
+                      "type": "object",
+                      "properties": {
+                        "comparison": {
+                          "description": "Two to four sentences comparing the paper with the descriptors of the chosen level and of the level above it, quoting the student's text as evidence.",
+                          "type": "string"
+                        },
+                        "score": {
+                          "description": "The score of the chosen level, one of 0, 1, 3, 5.",
+                          "type": "number"
+                        },
+                        "deductions": {
+                          "description": "The deductions that explain the gap between the maximum and the chosen score. Empty when the score is the maximum.",
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "points": {
+                                "description": "The number of points removed, above 0.",
+                                "type": "number"
+                              },
+                              "reason": {
+                                "description": "Why the points are removed, in English, quoting the student's text in French.",
+                                "type": "string"
+                              }
+                            },
+                            "additionalProperties": false,
+                            "required": ["points", "reason"]
+                          }
+                        }
+                      },
+                      "additionalProperties": false,
+                      "required": ["comparison", "score", "deductions"]
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "task",
+                    "coherence",
+                    "sociolinguistic",
+                    "vocabulary",
+                    "grammar"
+                  ]
+                }
+              },
+              "additionalProperties": false,
+              "required": ["textType", "anomalies", "criteria"]
+            }
+          }
+        },
+        "system": [
+          {
+            "type": "text",
+            "text": "You are an experienced DELF examiner. You grade one Production écrite paper, written by a student who is learning French, using the rubric below.\n\n# Input\n\nYou receive the exam question, the word count of the student's text and the student's text. The word count is computed by code, so do not count words yourself. The paper was handwritten and then transcribed, so the text is exactly what the student wrote, mistakes included.\n\n# Text type\n\nInfer the text type the exam question asks for. DELF questions almost always name it. Write it in French and in lowercase, as the question names it, for example \"courriel\", \"lettre formelle\", \"article\", \"message sur un forum\", \"essai\" or \"contribution à un débat\". If the question does not name it, choose the type that best fits the task.\n\nCheck the paper against the conventions of its text type:\n\n- Courriel or lettre amicale: a greeting and a closing suited to the reader (for example \"Salut Marie,\" and \"Bises,\"), tutoiement or vouvoiement suited to the relationship, and a signature. The register is informal or neutral.\n- Lettre formelle (lettre de réclamation, de motivation, de demande, etc.): the sender's and the recipient's details, place and date, a subject line (\"Objet : ...\"), an opening such as \"Madame, Monsieur,\", vouvoiement throughout, a formal closing (formule de politesse, such as \"Veuillez agréer, Madame, Monsieur, l'expression de mes salutations distinguées.\") and a signature. The register is formal.\n- Article, including article critique: a title, an introduction that presents the topic and draws the reader in, developed paragraphs and a conclusion. It addresses a wide readership, usually in a neutral register.\n- Message sur un forum or blog: replies to the topic or to an earlier message, in a personal tone, and may be signed with a pseudonym. Letter formulas are not required.\n- Essai or contribution à un débat: states the issue (la problématique) and the writer's position, develops structured arguments with examples, and ends with a conclusion, following an introduction, développement and conclusion.\n- Récit or témoignage: tells events or experiences in a clear order, mostly in past tenses.\n\nFor any other text type, use the conventions a DELF examiner would expect.\n\n# Grading each criterion\n\nGrade each criterion in three steps, in this order:\n\n1. Compare: compare the paper with the descriptors of the criterion, following the rubric's rules for choosing a level or score, and write a short comparison that quotes the student's text as evidence.\n2. Choose: give the score the comparison leads to. It must be one of the criterion's allowed scores, listed under \"Answer format\". Base it only on the descriptors and the rubric's rules, not on an overall impression of the paper, so that grading the same paper again gives the same score.\n3. Deduct: list the deductions that explain the gap between the criterion's maximum and the chosen score. Each deduction removes a number of points and gives the reason. The points must add up exactly to the gap, and there are no deductions when the chosen score is the maximum.\n\nAlso follow these rules:\n\n- Judge what the paper shows the student can do, against the level the rubric targets, not against a native speaker. Mistakes that the descriptors accept at this level do not lower the score on their own.\n- Grade each criterion only on what it covers. A weak criterion does not lower another one, a strong criterion does not raise another one, and the same mistake is never counted under two criteria.\n- Mistakes in how a word is spelled in the dictionary, including accents, belong to the criterion that covers vocabulary or spelling. Mistakes in agreement, in conjugation and in the gender of articles belong to the criterion that covers grammar.\n- A text longer than the minimum length is never penalized.\n- Group mistakes of the same kind into one deduction instead of writing one deduction per mistake. Order the deductions from the most to the fewest points removed.\n\n# Reasons\n\n- Write each reason in English, in one or two short sentences, for a teacher who may not speak French.\n- Quote the student's text in French, exactly as transcribed, between double quotes. When there is a correction, give it after the quote, for example: \"il faut que je vais\" should be \"il faut que j'aille\" (subjunctive after \"il faut que\").\n- When one deduction covers several mistakes of the same kind, quote up to three examples.\n\n# Illegible words\n\n[illegible] marks a word that could not be read from the handwriting. It says nothing about the student's French. Do not remove points for it, do not quote it as a mistake and do not guess what it says. Grade every criterion on the readable parts of the text.\n\n# Anomalies\n\nReport every anomaly from the rubric that applies, using the IDs listed under \"Answer format\", and report none if the paper has none. Do not lower any score because of an anomaly yourself, as any fixed penalty is applied by code.\n\n# Rubric\n\nYou are grading a DELF B2 Production écrite paper with the grid used since 01/09/2022.\n\n## Task\n\nThe candidate writes one text in 60 minutes, taking and arguing a personal position. Possible text types include contributions to a debate, formal letters and critical articles.\n\n## Choosing a level\n\nFor each criterion, choose exactly one level: \"Non répondu ou production insuffisante\", \"En dessous du niveau ciblé\", \"Au niveau ciblé B2\" or \"Au niveau ciblé B2+\". Choose it by following these steps in order:\n\n1. Split the descriptor of each level into its separate points. A paper reaches a level when it meets every point of that level's descriptor, read with the tolerance the descriptor itself gives (for example \"occasional errors that do not hinder understanding\").\n2. Check \"Au niveau ciblé B2\" first. If the paper reaches it, check \"Au niveau ciblé B2+\". If it does not, the level is \"En dessous du niveau ciblé\".\n3. Give \"Au niveau ciblé B2+\" only when the paper meets every point of its descriptor. When it does, give it without hesitating: \"Au niveau ciblé B2+\" does not mean a flawless text.\n4. When you cannot tell whether the paper meets a point, treat the point as not met. A paper torn between two levels gets the lower one.\n5. Use \"Non répondu ou production insuffisante\" only when the paper gives nothing to assess for that criterion.\n\n## Length\n\nPapers far below the minimum length are handled automatically. For any other paper below the minimum length, there is no fixed deduction: judge the shortfall as part of \"Réalisation de la tâche\".\n\n## Criteria\n\n### Réalisation de la tâche (compétence pragmatique)\n\n- En dessous du niveau ciblé: writes a connected, non-complex text related to the task, in which the writer simply states opinions, tastes and preferences. Can use concrete examples to explain the opinion.\n- Au niveau ciblé B2: develops a clear written argument related to the task, giving reasons for or against and explaining the advantages and disadvantages of different options. Supports arguments with examples suited to the situation.\n- Au niveau ciblé B2+: writes a text related to the task that clearly presents the issue (la problématique), the writer's opinion, and any proposals or conclusions. Integrates various arguments, justifications and examples in an elaborate way, suited to the situation and taking the reader's point of view into account.\n\nAlso check that the text type and the topic match the prompt, that the text meets the minimum length, and that it takes a clear position with arguments and precise examples.\n\n### Cohérence et cohésion (compétence pragmatique)\n\n- En dessous du niveau ciblé: writes a connected text using a few basic linking words. Layout and punctuation are not always used well.\n- Au niveau ciblé B2: writes a generally well-organized text using a range of linking words and connectors. Layout and punctuation help understanding, despite occasional errors (for example one idea split across two paragraphs).\n- Au niveau ciblé B2+: writes a clear, fluent, well-structured text with varied connectors. Layout and punctuation are logical and make reading easier.\n\nThe expected structure is a logical order of ideas with a beginning and an end (introduction, développement, conclusion).\n\n### Adéquation sociolinguistique (compétence sociolinguistique)\n\n- En dessous du niveau ciblé: uses the most common expressions and speech acts in a register broadly suited to the situation and/or reader.\n- Au niveau ciblé B2: adapts the text to the reader and to the register of the task. Any slips are rare and do not create tension for the reader.\n- Au niveau ciblé B2+: adjusts the level of formality flexibly to the situation and/or reader, and keeps that level throughout the whole text.\n\n### Lexique (compétence linguistique: vocabulary range, control and spelling)\n\n- En dessous du niveau ciblé: correctly uses simple vocabulary, but its range is still too limited for common social issues. Uses paraphrase for more complex ideas or words. Spelling errors are frequent and/or typical of a level below B2.\n- Au niveau ciblé B2: appropriately uses a wide range of vocabulary related to the writer's field of interest and common social issues. Can vary wording to avoid repetition, but some errors in word use may still occur and hinder understanding. Spelling is fairly accurate, with errors that do not hinder understanding.\n- Au niveau ciblé B2+: has a broad vocabulary across varied fields, and easily gets around gaps with synonyms or paraphrase. Occasional non-systematic awkward word choices may occur but never hinder understanding. Spelling is accurate, though errors may occur with more complex vocabulary.\n\n### Morphosyntaxe (compétence linguistique: grammar)\n\n- En dessous du niveau ciblé: controls simple structures and forms, and is relatively accurate with common complex structures, but struggles to stay accurate when expressing more elaborate ideas.\n- Au niveau ciblé B2: good grammatical control of the most frequent complex structures, although these are not very varied. Errors may occur in more elaborate structures but do not lead to misunderstandings.\n- Au niveau ciblé B2+: good grammatical control overall, with varied phrasing. Occasional non-systematic errors may still occur but never hinder understanding.\n\n## Anomalies\n\nReport every anomaly that applies. The score caps they lead to are applied automatically, so grade each criterion on what the text shows.\n\n- Hors-sujet thématique: the text type is right, but the topic is wrong.\n- Hors-sujet discursif: the topic is right, but the text type is wrong (for example an article instead of a formal letter).\n- Hors-sujet complet: both the topic and the text type are wrong. Report it instead of the two anomalies above.\n\n# Answer format\n\nGrade these criteria, under their IDs:\n\n- \"task\": Réalisation de la tâche (Task completion), out of 5. Allowed scores: 0, 1, 3, 5.\n- \"coherence\": Cohérence et cohésion (Structure and linking of ideas), out of 5. Allowed scores: 0, 1, 3, 5.\n- \"sociolinguistic\": Adéquation sociolinguistique (Register and social conventions), out of 5. Allowed scores: 0, 1, 3, 5.\n- \"vocabulary\": Lexique (Vocabulary and spelling), out of 5. Allowed scores: 0, 1, 3, 5.\n- \"grammar\": Morphosyntaxe (Grammar), out of 5. Allowed scores: 0, 1, 3, 5.\n\nAnomaly IDs:\n\n- \"wrongTopic\": Hors-sujet thématique (Wrong topic)\n- \"wrongTextType\": Hors-sujet discursif (Wrong text type)\n- \"wrongTopicAndTextType\": Hors-sujet complet (Wrong topic and text type)",
+            "cache_control": {
+              "type": "ephemeral"
+            }
+          }
+        ],
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "<exam_question>\n@Safir\nCoucou tout le monde ! J’ai décidé d’être plus actif sur les réseaux sociaux et de partager des photos de ma vie avec plus de personnes du monde entier. Comme ça, je suis sûr que je pourrai me faire plein d’amis partout !\n\nVous lisez ce message sur un forum de discussion. Vous répondez à Safir pour le faire changer d’avis. Vous lui donnez des exemples de mauvaises expériences pour lui démontrer que la visibilité sur les réseaux sociaux n’est pas toujours une bonne chose. (250 mots minimum)\n</exam_question>\n\n<word_count>\n284 words. The rubric asks for at least 250 words.\n</word_count>\n\n<student_text>\nSalut Safir!\n\nJe comprends que tu veuilles être plus actif sur les réseaux sociaux et te faire des amis partout dans le monde. C'est vrai que les réseaux sociaux permettent de rencontrer des personnes intéressantes. Cependant, je pense que partager trop de photos de sa vie peut avoir des conséquences négatives.\n\nTout d'abord, il faut faire attention aux inconnus sur internet. Par exemple, un ami à moi a publié une photo de lui devant son école. Quelques jours plus tard, une personne qu'il ne connaissait pas lui a envoyé des messages en disant qu'elle savait où il étudiait. Il a eu peur et il a supprimé la photo. Cela montre que certaines personnes peuvent utiliser nos publications de manière dangereuse.\n\nEnsuite, les photos publiées sur internet peuvent rester en ligne très longtemps. Imagine que tu publies une photo embarrassante pour faire rire tes amis. Même si tu la supprime après, quelqu'un peut l'avoir enregistré et la partager avec d'autres personnes. Tu pourrais regretter cette publication plus tard.\n\nDe plus, les réseaux sociaux peuvent provoquer des problèmes entre amis. Par exemple, si tu publies des photos d'une fête sans inviter certaines personnes, elles peuvent se sentir exclues et se fâcher contre toi. Une simple publication peut donc créer des conflits.\n\nBien sûr, les réseaux sociaux sont utiles pour garder le contact avec les autres et découvrir des nouvelles cultures. Mais il faut réfléchir avant de publier des photos et éviter de partager trop d'informations personnelles.\n\nPour conclure, je te conseille d'être prudent. Tu peux te faire des amis sur internet sans montrer tous les détails de ta vie. Après tout, la sécurité et la vie privée sont beaucoup plus importantes que le nombre d'abonnés!\n\nAmélie\n</student_text>"
+              }
+            ]
+          }
+        ]
+      },
+      "status": 200,
+      "durationMs": 17713,
+      "response": {
+        "model": "claude-opus-5-5",
+        "id": "msg_011ChS2YaVmy9SA7rFHkdH8C",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "",
+            "signature": "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"
+          },
+          {
+            "type": "text",
+            "text": "{\"textType\":\"message sur un forum\",\"anomalies\":[],\"criteria\":{\"task\":{\"comparison\":\"The paper goes beyond the B2 descriptor of a clear argument with suitable examples and meets every B2+ point. It states the issue and its position (\\\"je pense que partager trop de photos de sa vie peut avoir des conséquences négatives\\\") and takes Safir's view into account (\\\"Je comprends que tu veuilles...\\\", \\\"Bien sûr, les réseaux sociaux sont utiles...\\\"). It supports three arguments with examples, including a real bad experience (\\\"un ami à moi a publié une photo de lui devant son école\\\"), and ends with advice (\\\"je te conseille d'être prudent\\\"). The topic, text type and length (284 words) all match the prompt.\",\"score\":5,\"deductions\":[]},\"coherence\":{\"comparison\":\"The text reaches B2+: it is clear and well structured, with an introduction, three developed paragraphs, a concession and a conclusion. Connectors are varied and logical (\\\"Cependant\\\", \\\"Tout d'abord\\\", \\\"Ensuite\\\", \\\"De plus\\\", \\\"Bien sûr... Mais\\\", \\\"Pour conclure\\\", \\\"Après tout\\\"). Paragraphing and punctuation make reading easier.\",\"score\":5,\"deductions\":[]},\"sociolinguistic\":{\"comparison\":\"The register suits a friendly forum reply and is kept throughout the text, which meets B2+. It opens with \\\"Salut Safir!\\\", uses tutoiement consistently (\\\"Imagine que tu publies\\\", \\\"je te conseille\\\") and is signed with a first name (\\\"Amélie\\\"). The advice is friendly and not preachy, which is suited to the reader.\",\"score\":5,\"deductions\":[]},\"vocabulary\":{\"comparison\":\"The vocabulary is broad and precise for the topic, which meets B2+ (\\\"publications\\\", \\\"embarrassante\\\", \\\"se sentir exclues\\\", \\\"abonnés\\\", \\\"vie privée\\\", \\\"supprimer\\\", \\\"conflits\\\"). The writer varies wording to avoid repetition (\\\"publier\\\", \\\"partager\\\", \\\"publication\\\"). Spelling is accurate throughout.\",\"score\":5,\"deductions\":[]},\"grammar\":{\"comparison\":\"Grammar is well controlled overall, with varied structures, which meets B2+: a subjunctive (\\\"que tu veuilles\\\"), a conditional (\\\"Tu pourrais regretter\\\"), a gerund (\\\"en disant qu'elle savait\\\"), relative clauses and \\\"Même si\\\". The few errors are occasional, not systematic, and never hinder understanding: \\\"tu la supprime\\\" should be \\\"tu la supprimes\\\", \\\"l'avoir enregistré\\\" should be \\\"l'avoir enregistrée\\\", and \\\"des nouvelles cultures\\\" should be \\\"de nouvelles cultures\\\".\",\"score\":5,\"deductions\":[]}}}"
+          }
+        ],
+        "container": null,
+        "stop_reason": "end_turn",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 959,
+          "cache_creation_input_tokens": 6441,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 6441,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 1715,
+          "output_tokens_details": {
+            "thinking_tokens": 749
+          },
+          "service_tier": "standard",
+          "inference_geo": "global",
+          "speed": "standard"
+        },
+        "diagnostics": null
+      }
+    }
+  ]
+}

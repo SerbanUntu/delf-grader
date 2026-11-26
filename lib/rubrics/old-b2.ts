@@ -1,4 +1,9 @@
-import { halfPointLevels, lengthLevels, type Rubric } from "./base";
+import {
+  halfPointLevels,
+  lengthLevels,
+  oldGridScoreRules,
+  type Rubric,
+} from "./base";
 
 const lengthSteps = [
   { minimumWords: 0, score: 0 },
@@ -106,17 +111,19 @@ export const oldB2 = {
 
 The candidate writes one text in 60 minutes, taking and arguing a personal position. Possible text types include contributions to a debate, formal letters and critical articles.
 
+${oldGridScoreRules("B2")}
+
 ## Length
 
 "Respect de la consigne (longueur)" is scored automatically from the word count. Do not grade it, and do not remove points for length under any other criterion. There is no other penalty for short texts.
 
 ## Criteria
 
-Each descriptor states what is expected at B2. Give the maximum score when the paper fully meets it, and remove points in proportion to how far the paper falls short of it.
-
 ### Respect de la consigne (situation)
 
 Respects the situation and the type of text requested.
+
+If the paper leaves out something the prompt asks for (for example one of the points it must cover), remove points under "Capacité à présenter des faits", not here.
 
 ### Correction sociolinguistique
 
@@ -146,20 +153,22 @@ Uses a fairly wide range of vocabulary, despite occasional gaps that lead to par
 
 Vocabulary is generally appropriate. Confusions and wrong word choices occur but do not block communication.
 
+Its score cannot be higher than the score of "Étendue du vocabulaire", because control of a vocabulary below the expected range is not rewarded.
+
 ### Maîtrise de l'orthographe
 
 - Produces a continuous, clear and understandable text.
 - Spelling is fairly accurate but may show native-language influence.
 - Can spell most words expected at this level correctly.
 
-Only spelling errors in word forms (for example "vancance") are penalized here. Grammatical spelling errors (for example "trois sac") are penalized under "Choix des formes".
+Only spelling errors in word forms, including accents (for example "vancance" or "etudiant"), are penalized here. Grammatical spelling errors (for example "trois sac") are penalized under "Choix des formes".
 
 ### Choix des formes
 
 Good grammatical control. Non-systematic errors may still occur but do not cause misunderstandings. Check:
 - the tenses and moods the task calls for (for example future, conditional or subjunctive when making proposals)
 - the sequence of tenses (concordance des temps)
-- morphosyntax (verb endings, gender and number agreement, pronominal constructions, etc.)
+- morphosyntax (verb endings, gender and number agreement, pronominal constructions, etc.), including wrong articles (for example "le table")
 
 ### Degré d'élaboration des phrases
 

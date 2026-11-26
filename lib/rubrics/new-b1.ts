@@ -1,4 +1,4 @@
-import { bandLevels, type Rubric } from "./base";
+import { bandLevels, newGridLevelRules, type Rubric } from "./base";
 
 export const newB1 = {
   id: "new-b1",
@@ -82,9 +82,7 @@ export const newB1 = {
 
 The candidate writes one text in 45 minutes, expressing a personal attitude on a general topic. Possible text types include essays, letters, articles, emails and forum posts.
 
-## Bands
-
-For each criterion, choose exactly one band: "Non répondu ou production insuffisante", "En dessous du niveau ciblé", "Au niveau ciblé B1" or "Au niveau ciblé B1+". Use "Non répondu ou production insuffisante" only when the paper gives nothing to assess for that criterion. The descriptors of the other bands are below.
+${newGridLevelRules("B1")}
 
 ## Length
 
@@ -98,7 +96,7 @@ Papers far below the minimum length are handled automatically. For any other pap
 - Au niveau ciblé B1: writes a connected, non-complex text that broadly meets the task requirements. Gives an opinion and justifies it with a few examples.
 - Au niveau ciblé B1+: writes a clear text fully matching the task. Supports the opinion with concrete examples, and may even develop a simple argument to justify it.
 
-Also check that the text type and the topic match the prompt, that the text meets the minimum length, and that it describes facts, past events or personal experiences where the prompt asks for them.
+Also check that the text type and the topic match the prompt, that the text meets the minimum length, and that it describes facts, past events or personal experiences where the prompt asks for them. Expect only as many facts, opinions and examples as fit in about 160 words.
 
 ### Cohérence et cohésion (compétence pragmatique)
 

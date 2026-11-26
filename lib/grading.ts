@@ -96,11 +96,29 @@ export function buildGraderSchema(rubric: Rubric) {
     anomalies: z
       .array(z.enum(rubric.anomalies.map((anomaly) => anomaly.id)))
       .describe("The IDs of the anomalies found in the paper."),
-    deductions: z.object(
+    criteria: z.object(
       Object.fromEntries(
         getGradedCriteria(rubric).map((criterion) => [
           criterion.id,
-          z.array(deduction).describe(criterion.frenchName),
+          z
+            .object({
+              comparison: z
+                .string()
+                .describe(
+                  "Two to four sentences comparing the paper with the descriptors of the chosen level and of the level above it, quoting the student's text as evidence.",
+                ),
+              score: z
+                .number()
+                .describe(
+                  `The score of the chosen level, one of ${formatAllowedScores(criterion)}.`,
+                ),
+              deductions: z
+                .array(deduction)
+                .describe(
+                  "The deductions that explain the gap between the maximum and the chosen score. Empty when the score is the maximum.",
+                ),
+            })
+            .describe(criterion.frenchName),
         ]),
       ),
     ),
@@ -111,6 +129,16 @@ export type GraderAnswer = z.infer<ReturnType<typeof buildGraderSchema>>;
 
 function pluralizePoints(points: number): string {
   return `${formatNumber(points)} ${points === 1 ? "point" : "points"}`;
+}
+
+/**
+ * Lists the scores a criterion allows, such as "0, 1, 3, 5".
+ *
+ * @param criterion The criterion.
+ * @returns The allowed scores, separated by commas.
+ */
+export function formatAllowedScores(criterion: Criterion): string {
+  return criterion.levels.map((level) => formatNumber(level.score)).join(", ");
 }
 
 /**
@@ -167,7 +195,19 @@ function scoreFromAnswer(
   criterion: Criterion,
   answer: GraderAnswer,
 ): CriterionResult {
-  const deductions = answer.deductions[criterion.id] ?? [];
+  const criterionAnswer = answer.criteria[criterion.id];
+  if (!criterionAnswer) {
+    throw new GraderAnswerError(
+      `The answer does not grade the criterion "${criterion.id}".`,
+    );
+  }
+  const { score, deductions } = criterionAnswer;
+  const maximum = formatNumber(criterion.maxScore);
+  if (!criterion.levels.some((level) => level.score === score)) {
+    throw new GraderAnswerError(
+      `The score chosen for "${criterion.id}" is ${formatNumber(score)}/${maximum}, but the only allowed scores are ${formatAllowedScores(criterion)}.`,
+    );
+  }
   for (const deduction of deductions) {
     if (!Number.isFinite(deduction.points) || deduction.points <= 0) {
       throw new GraderAnswerError(
@@ -175,14 +215,13 @@ function scoreFromAnswer(
       );
     }
   }
-  const removed = deductions.reduce((sum, { points }) => sum + points, 0);
-  const score = roundScore(criterion.maxScore - removed);
-  if (!criterion.levels.some((level) => level.score === score)) {
-    const allowed = criterion.levels
-      .map((level) => formatNumber(level.score))
-      .join(", ");
+  const removed = roundScore(
+    deductions.reduce((sum, { points }) => sum + points, 0),
+  );
+  const gap = roundScore(criterion.maxScore - score);
+  if (removed !== gap) {
     throw new GraderAnswerError(
-      `The deductions under "${criterion.id}" remove ${pluralizePoints(removed)}, which leaves ${formatNumber(score)}/${formatNumber(criterion.maxScore)}, but the only allowed scores are ${allowed}.`,
+      `The deductions under "${criterion.id}" remove ${pluralizePoints(removed)}, but the chosen score of ${formatNumber(score)}/${maximum} needs them to remove exactly ${pluralizePoints(gap)}.`,
     );
   }
   return {
@@ -222,13 +261,13 @@ function applyCaps(
 }
 
 /**
- * Computes the score of every criterion from the grader's deductions and the deductions applied by code.
+ * Computes the score of every criterion from the grader's chosen scores and deductions, and the deductions applied by code.
  *
  * @param rubric The rubric.
  * @param wordCount The number of words in the transcription.
  * @param answer The grader's answer, or null if the paper is set to 0 without asking the grader.
  * @returns The grading result.
- * @throws A GraderAnswerError if the grader's deductions lead to a score that the rubric does not allow.
+ * @throws A GraderAnswerError if a chosen score is not allowed by the rubric, or if its deductions do not add up to the gap between the maximum and that score.
  */
 export function computeGradingResult(
   rubric: Rubric,

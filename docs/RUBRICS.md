@@ -2,6 +2,47 @@
 
 These are the four fixed rubrics supported by the application. The structure of each rubric (criteria, maximum points, allowed scores, level labels, length thresholds and anomaly caps) is encoded as typed data in code. The descriptions and grading explanations below are the basis for the system prompt stored with each rubric.
 
+## Choosing levels and scores
+
+The grader follows these rules so that the same paper gets the same score every time. For each criterion, it first compares the paper with the descriptors, then picks a level (an allowed score), then lists the deductions that explain the gap to the maximum.
+
+### Rules for every grid
+
+- Judge what the paper shows the student can do (évaluation positive), against the level the grid targets. Mistakes only matter as far as a descriptor mentions them [3].
+- Grade only with the grid's criteria, each on what it covers [3]. The same mistake is never counted under two criteria.
+- When the paper meets the descriptor, give the score without hesitating ("Ne pas hésiter à attribuer le maximum des points quand la compétence du candidat correspond au descripteur du critère évalué" [1], section 3).
+- When torn between two levels or scores, choose the lower one. This rule is the app's own: the guides tell an examiner in doubt to consult another examiner and then the head of the exam centre [1], section 1.3, which the grader cannot do.
+- Errors in how a word is spelled in the dictionary, including accents ("chateau", "etudiant"), belong to the vocabulary or spelling criterion. Errors in agreement and conjugation ("un séjour magnifiques"), and wrong articles ("le table"), belong to the grammar criterion [1], sections 5.2 and 5.3.
+- A text longer than the minimum is never penalized [1], section 5.1.
+
+### New grids
+
+The new grids use an approach "par niveau de performance" [2], [4]. For each criterion:
+
+1. Split each level's descriptor into its separate points. A paper reaches a level when it meets every point, read with the tolerance the descriptor gives (for example "malgré des erreurs ponctuelles").
+2. Check the target level (B1 or B2) first. If the paper reaches it, check B1+ or B2+. If not, the level is "En dessous du niveau ciblé".
+3. Give B1+ or B2+ only when the paper meets every point of its descriptor, and then without hesitating, as it does not mean a flawless text.
+4. A point the grader cannot confirm counts as not met.
+5. "Non répondu ou production insuffisante" is only for a criterion with nothing to assess.
+
+### Pre-Sept. 2022 grids
+
+Each descriptor states what is expected at the target level. To keep half-point scores consistent, the grader only uses five steps, as a share of the criterion's maximum, rounded down to the nearest 0.5:
+
+| Step           | When                                                                                                                  |
+| -------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Maximum        | The paper meets every point of the descriptor                                                                         |
+| Three quarters | The paper meets the descriptor overall, with a few shortfalls that do not get in the way of the reader                |
+| Half           | The paper meets the descriptor only in part, with frequent shortfalls or shortfalls that get in the way of the reader |
+| One quarter    | The paper falls clearly short and meets only a few points of the descriptor                                           |
+| 0              | Nothing to assess for this criterion                                                                                  |
+
+Rules from the examiner's manual [1] for these grids:
+
+- A requested point that the paper leaves out (for example forgetting to say what one will bring to a picnic) is penalized under "Capacité à présenter des faits", not "Respect de la consigne" (section 5.1).
+- The score of "Maîtrise du vocabulaire" cannot be higher than the score of "Étendue du vocabulaire" (section 5.4).
+- At B1, the number of facts or opinions expected is in proportion to the required number of words (section 6.3). The new B1 grid follows the same rule.
+
 ## (Pre-Sept. 2022) B1
 
 DELF B1 Production écrite grid used until 31/08/2022.
@@ -346,3 +387,10 @@ DELF B2 Production écrite grid used since 01/09/2022.
 ### Other notes
 
 - Between 125 and 249 words, there is no fixed deduction. Falling short of 250 words is judged as part of "Réalisation de la tâche".
+
+## Sources
+
+1. CIEP, Bureau DELF DALF, "Manuel de l'examinateur-correcteur du DELF et du DALF", version H bis, Sèvres, January 2015. Copy at https://languageadvisor.net/wp-content/uploads/2022/05/Manuel-de-lexaminateur-correcteur-du-DELF-et-du-DALF-PDFDrive-.pdf
+2. France Éducation international, "DELF B2, grille d'évaluation de la production écrite" and "descripteurs de performance de la production écrite" (new grid), https://france-education-international.fr/document/grille-pe-b2, and the B1 grid at https://delfdalf.ch/fileadmin/user_upload/Nouvelles_Grilles/Grille_PE_B1.pdf
+3. CIEP, "DELF Prim A1.1, notice d'utilisation des grilles d'évaluation", 2015: "Tout comme le DELF, le DELF Prim est basé sur une évaluation positive" and "L'évaluation doit être effectuée exclusivement en fonction de ces critères". https://www.delfdalf.ch/fileadmin/user_upload/Unterlagen/Exemples_examens/A1/A1_1/2018_uploads/DELF_A11_notice_d_utilisation_des_grilles.pdf
+4. DELF DALF Suisse, "Nouvelles grilles d'évaluation": "Les nouvelles grilles proposent une approche par niveau de performance". https://www.delfdalf.ch/nouvelles-grilles-devaluation

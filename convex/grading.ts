@@ -9,6 +9,7 @@ import { formatNumber } from "../lib/format";
 import {
   buildGraderSchema,
   computeGradingResult,
+  formatAllowedScores,
   GraderAnswerError,
   type GradingResult,
   getAutomaticZeroReason,
@@ -50,15 +51,21 @@ Check the paper against the conventions of its text type:
 
 For any other text type, use the conventions a DELF examiner would expect.
 
-# Deductions
+# Grading each criterion
 
-For each criterion, start from its maximum score and list the deductions. Each deduction removes a number of points and gives the reason.
+Grade each criterion in three steps, in this order:
 
-- Leave the list of a criterion empty only when the paper fully meets the highest level of that criterion.
-- The points removed from a criterion must leave one of its allowed scores, listed under "Answer format". Any other total is rejected.
-- Grade each criterion only on what it covers, and do not remove points twice for the same mistake under two criteria.
+1. Compare: compare the paper with the descriptors of the criterion, following the rubric's rules for choosing a level or score, and write a short comparison that quotes the student's text as evidence.
+2. Choose: give the score the comparison leads to. It must be one of the criterion's allowed scores, listed under "Answer format". Base it only on the descriptors and the rubric's rules, not on an overall impression of the paper, so that grading the same paper again gives the same score.
+3. Deduct: list the deductions that explain the gap between the criterion's maximum and the chosen score. Each deduction removes a number of points and gives the reason. The points must add up exactly to the gap, and there are no deductions when the chosen score is the maximum.
+
+Also follow these rules:
+
+- Judge what the paper shows the student can do, against the level the rubric targets, not against a native speaker. Mistakes that the descriptors accept at this level do not lower the score on their own.
+- Grade each criterion only on what it covers. A weak criterion does not lower another one, a strong criterion does not raise another one, and the same mistake is never counted under two criteria.
+- Mistakes in how a word is spelled in the dictionary, including accents, belong to the criterion that covers vocabulary or spelling. Mistakes in agreement, in conjugation and in the gender of articles belong to the criterion that covers grammar.
+- A text longer than the minimum length is never penalized.
 - Group mistakes of the same kind into one deduction instead of writing one deduction per mistake. Order the deductions from the most to the fewest points removed.
-- Judge the paper against the level the rubric targets, not against a native speaker. Mistakes that the descriptors accept at this level do not remove points on their own.
 
 # Reasons
 
@@ -75,12 +82,10 @@ For each criterion, start from its maximum score and list the deductions. Each d
 Report every anomaly from the rubric that applies, using the IDs listed under "Answer format", and report none if the paper has none. Do not lower any score because of an anomaly yourself, as any fixed penalty is applied by code.`;
 
 function describeAnswerFormat(rubric: Rubric): string {
-  const criteria = getGradedCriteria(rubric).map((criterion) => {
-    const allowed = criterion.levels
-      .map((level) => formatNumber(level.score))
-      .join(", ");
-    return `- "${criterion.id}": ${criterion.frenchName} (${criterion.englishSubtitle}), out of ${formatNumber(criterion.maxScore)}. Allowed scores: ${allowed}.`;
-  });
+  const criteria = getGradedCriteria(rubric).map(
+    (criterion) =>
+      `- "${criterion.id}": ${criterion.frenchName} (${criterion.englishSubtitle}), out of ${formatNumber(criterion.maxScore)}. Allowed scores: ${formatAllowedScores(criterion)}.`,
+  );
   const anomalies = rubric.anomalies.map(
     (anomaly) =>
       `- "${anomaly.id}": ${anomaly.frenchName} (${anomaly.englishSubtitle})`,
@@ -93,7 +98,7 @@ function describeAnswerFormat(rubric: Rubric): string {
     : "";
   return `# Answer format
 
-Give the deductions under these criterion IDs:
+Grade these criteria, under their IDs:
 
 ${criteria.join("\n")}${lengthNote}
 
@@ -162,6 +167,7 @@ async function gradeText(input: {
         },
         messages,
         output: Output.object({ schema }),
+        providerOptions: { anthropic: { effort: "high" } },
       });
       try {
         return computeGradingResult(rubric, input.wordCount, output);
@@ -174,7 +180,7 @@ async function gradeText(input: {
           { role: "assistant", content: JSON.stringify(output) },
           {
             role: "user",
-            content: `Your answer was rejected: ${error.message} Grade the paper again, so that the deductions under every criterion leave one of its allowed scores.`,
+            content: `Your answer was rejected: ${error.message} Grade the paper again. For every criterion, choose one of its allowed scores and give deductions that add up exactly to the gap between its maximum and that score.`,
           },
         );
       }
