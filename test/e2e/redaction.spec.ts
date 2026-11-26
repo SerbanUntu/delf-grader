@@ -1,63 +1,24 @@
 import { expect, type Page, test } from "@playwright/test";
+import {
+  createSubmission,
+  deleteClass,
+  getLoadedImageBox,
+  hiddenArea,
+  openRedactionStep,
+  pageHeight,
+  pageWidth,
+} from "./helpers";
 
 const className = `E2E redaction ${Date.now()}`;
-const pageWidth = 800;
-const pageHeight = 1000;
-const hiddenArea = { x: 100, y: 100, width: 300, height: 100 };
 let classUrl: string | undefined;
 
 test.use({ viewport: { width: 1280, height: 1600 } });
 
 test.afterEach(async ({ page }) => {
-  if (!classUrl) {
-    return;
+  if (classUrl) {
+    await deleteClass(page, classUrl, className);
   }
-  await page.goto(classUrl);
-  await page
-    .getByRole("button", { name: `Actions for ${className}`, exact: true })
-    .click();
-  await page.getByRole("menuitem", { name: "Delete class" }).click();
-  await page.getByRole("button", { name: "Delete", exact: true }).click();
-  await page.waitForURL((url) => url.pathname === "/");
 });
-
-async function createSubmission(page: Page) {
-  await page.goto("/");
-  await page.getByRole("button", { name: "New class" }).click();
-  await page.getByPlaceholder("Clasa a IX-a Z").fill(className);
-  await page.getByRole("button", { name: "Create" }).click();
-  await page.waitForURL(/\/classes\//);
-  classUrl = page.url();
-
-  await page.getByRole("button", { name: "New session" }).click();
-  await page.getByLabel("Rubric").click();
-  await page.getByRole("option", { name: "New B1" }).click();
-  await page.getByLabel("Exam question").fill("Vous écrivez une lettre.");
-  await page.getByRole("button", { name: "Create" }).click();
-  await page.waitForURL(/\/sessions\//);
-
-  await page.getByRole("button", { name: "Add submission" }).click();
-  await page.getByRole("button", { name: "Create" }).click();
-  await page.waitForURL(/\/submissions\//);
-}
-
-async function createPageImage(page: Page): Promise<Buffer> {
-  const base64 = await page.evaluate(
-    ({ width, height, area }) => {
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const context = canvas.getContext("2d") as CanvasRenderingContext2D;
-      context.fillStyle = "#ffffff";
-      context.fillRect(0, 0, width, height);
-      context.fillStyle = "#ff0000";
-      context.fillRect(area.x, area.y, area.width, area.height);
-      return canvas.toDataURL("image/png").split(",")[1];
-    },
-    { width: pageWidth, height: pageHeight, area: hiddenArea },
-  );
-  return Buffer.from(base64, "base64");
-}
 
 async function drawRectangle(
   page: Page,
@@ -65,16 +26,7 @@ async function drawRectangle(
   from: { x: number; y: number },
   to: { x: number; y: number },
 ) {
-  const image = page.getByRole("img", { name: imageName });
-  await expect
-    .poll(() =>
-      image.evaluate((element: HTMLImageElement) => element.naturalWidth),
-    )
-    .toBeGreaterThan(0);
-  const box = await image.boundingBox();
-  if (!box) {
-    throw new Error(`${imageName} is not visible.`);
-  }
+  const box = await getLoadedImageBox(page, imageName);
   await page.mouse.move(
     box.x + box.width * from.x,
     box.y + box.height * from.y,
@@ -125,17 +77,8 @@ function expectColor(color: number[], expected: number) {
 test("the redaction tool burns the rectangles into the uploaded pages", async ({
   page,
 }) => {
-  await createSubmission(page);
-
-  const image = await createPageImage(page);
-  await page.locator('input[type="file"]').setInputFiles([
-    { name: "page-1.png", mimeType: "image/png", buffer: image },
-    { name: "page-2.png", mimeType: "image/png", buffer: image },
-  ]);
-  await page.getByRole("button", { name: "Save", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "Save (no redactions)" }),
-  ).toBeVisible();
+  classUrl = await createSubmission(page, className);
+  await openRedactionStep(page);
 
   await drawRectangle(
     page,
@@ -162,11 +105,6 @@ test("the redaction tool burns the rectangles into the uploaded pages", async ({
   await expect(page.getByText("2 rectangles drawn")).toBeVisible();
   await page.getByRole("button", { name: "Undo" }).click();
   await expect(page.getByText("1 rectangle drawn")).toBeVisible();
-
-  await page.getByRole("button", { name: "Zoom in" }).click();
-  await expect(page.getByText("150%")).toBeVisible();
-  await page.getByRole("button", { name: "Zoom out" }).click();
-  await expect(page.getByText("100%")).toBeVisible();
 
   const uploads: Buffer[] = [];
   await page.route(/\/api\/storage\/upload/, async (route) => {

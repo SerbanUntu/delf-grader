@@ -3,6 +3,7 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import { type ReactNode, useRef, useState } from "react";
+import { usePageZoom, ZoomArea, ZoomControls } from "@/components/page-zoom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -12,7 +13,28 @@ export type ViewerPage = {
 };
 
 /**
- * Shows the pages of a submission one under the other, with buttons to go to the previous or next page.
+ * Shows a student page at reading size.
+ *
+ * @param page The page image.
+ * @param alt The text read by screen readers, empty for a copy that only repeats what is already shown.
+ */
+export function PageImage({ page, alt }: { page: ViewerPage; alt: string }) {
+  return (
+    <Image
+      src={page.url}
+      alt={alt}
+      width={0}
+      height={0}
+      sizes="(min-width: 1024px) 75vw, 100vw"
+      unoptimized
+      draggable={false}
+      className="block h-auto w-full rounded-md bg-white shadow-sm select-none"
+    />
+  );
+}
+
+/**
+ * Shows the pages of a submission one under the other, with zoom, a magnifier and buttons to go to the previous or next page.
  *
  * @param pages The page images in order.
  * @param badge A short label shown above the pages, such as "Not redacted yet".
@@ -24,12 +46,12 @@ export function PageViewer({
   pages: ViewerPage[];
   badge?: ReactNode;
 }) {
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const zoom = usePageZoom("viewer");
   const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   function goToPage(index: number) {
-    const scrollArea = scrollAreaRef.current;
+    const scrollArea = zoom.viewportRef.current;
     const page = pageRefs.current[index];
     if (scrollArea && page) {
       scrollArea.scrollTo({
@@ -41,7 +63,7 @@ export function PageViewer({
   }
 
   function handleScroll() {
-    const scrollArea = scrollAreaRef.current;
+    const scrollArea = zoom.viewportRef.current;
     if (!scrollArea) {
       return;
     }
@@ -66,33 +88,39 @@ export function PageViewer({
           </span>
           {badge}
         </div>
-        {pages.length > 1 && (
-          <div className="flex gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label="Previous page"
-              disabled={currentIndex === 0}
-              onClick={() => goToPage(currentIndex - 1)}
-            >
-              <ChevronLeftIcon className="size-5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label="Next page"
-              disabled={currentIndex >= pages.length - 1}
-              onClick={() => goToPage(currentIndex + 1)}
-            >
-              <ChevronRightIcon className="size-5" />
-            </Button>
-          </div>
-        )}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <ZoomControls zoom={zoom} />
+          {pages.length > 1 && (
+            <div className="flex gap-1">
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Previous page"
+                disabled={currentIndex === 0}
+                onClick={() => goToPage(currentIndex - 1)}
+              >
+                <ChevronLeftIcon className="size-5" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Next page"
+                disabled={currentIndex >= pages.length - 1}
+                onClick={() => goToPage(currentIndex + 1)}
+              >
+                <ChevronRightIcon className="size-5" />
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
-      <div
-        ref={scrollAreaRef}
+      <ZoomArea
+        zoom={zoom}
         onScroll={handleScroll}
-        className="relative grid max-h-[75vh] gap-4 overflow-y-auto p-4"
+        className="h-[75vh] min-h-80"
+        magnified={pages.map((page) => (
+          <PageImage key={page.id} page={page} alt="" />
+        ))}
       >
         {pages.map((page, index) => (
           <div
@@ -101,18 +129,10 @@ export function PageViewer({
               pageRefs.current[index] = element;
             }}
           >
-            <Image
-              src={page.url}
-              alt={`Page ${index + 1}`}
-              width={0}
-              height={0}
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              unoptimized
-              className="h-auto w-full rounded-md bg-white shadow-sm"
-            />
+            <PageImage page={page} alt={`Page ${index + 1}`} />
           </div>
         ))}
-      </div>
+      </ZoomArea>
     </div>
   );
 }

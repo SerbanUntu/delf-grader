@@ -4,12 +4,10 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   Cross2Icon,
+  HandIcon,
   ResetIcon,
   TrashIcon,
-  ZoomInIcon,
-  ZoomOutIcon,
 } from "@radix-ui/react-icons";
-import Image from "next/image";
 import {
   type PointerEvent,
   type ReactNode,
@@ -18,13 +16,13 @@ import {
   useRef,
   useState,
 } from "react";
-import type { ViewerPage } from "@/components/page-viewer";
+import { PageImage, type ViewerPage } from "@/components/page-viewer";
+import { usePageZoom, ZoomArea, ZoomControls } from "@/components/page-zoom";
 import { Button } from "@/components/ui/button";
+import { Toggle } from "@/components/ui/toggle";
 import type { Rectangle } from "@/lib/page-images";
 import { cn } from "@/lib/utils";
 
-const zoomLevels = [0.5, 0.75, 1, 1.5, 2, 3];
-const defaultZoomIndex = zoomLevels.indexOf(1);
 const minimumRectangleSize = 6;
 
 export type DrawnRectangle = Rectangle & { id: number };
@@ -84,17 +82,16 @@ export function RedactionEditor({
   badge?: ReactNode;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const nextId = useRef(0);
   const [pageIndex, setPageIndex] = useState(0);
-  const [zoomIndex, setZoomIndex] = useState(defaultZoomIndex);
+  const zoom = usePageZoom("redaction");
+  const [isMoving, setIsMoving] = useState(false);
   const [selectedId, setSelectedId] = useState<number>();
   const [draft, setDraft] = useState<{ start: Point; end: Point }>();
   const [history, setHistory] = useState<DrawnRectangle[][][]>([]);
 
   const page = pages[pageIndex];
   const pageRectangles = rectangles[pageIndex] ?? [];
-  const zoom = zoomLevels[zoomIndex];
   const canDelete = !disabled && selectedId !== undefined;
   const canUndo = !disabled && history.length > 0;
 
@@ -102,7 +99,7 @@ export function RedactionEditor({
     setPageIndex(index);
     setSelectedId(undefined);
     setDraft(undefined);
-    scrollAreaRef.current?.scrollTo({ top: 0, left: 0 });
+    zoom.viewportRef.current?.scrollTo({ top: 0, left: 0 });
   }
 
   function changePage(
@@ -177,6 +174,10 @@ export function RedactionEditor({
   }
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
+    if (!event.isPrimary) {
+      setDraft(undefined);
+      return;
+    }
     if (disabled || event.button !== 0) {
       return;
     }
@@ -211,6 +212,7 @@ export function RedactionEditor({
   const selectedRectangle = pageRectangles.find(
     (rectangle) => rectangle.id === selectedId,
   );
+  const draftRectangle = draft && toRectangle(draft.start, draft.end);
 
   return (
     <div
@@ -224,44 +226,37 @@ export function RedactionEditor({
           </span>
           {badge}
         </div>
-        <div className="flex flex-wrap items-center gap-1">
-          <Button variant="outline" disabled={!canUndo} onClick={undo}>
-            <ResetIcon className="size-4" />
-            Undo
-          </Button>
-          <Button
-            variant="outline"
-            disabled={!canDelete}
-            onClick={deleteSelected}
-          >
-            <TrashIcon className="size-4" />
-            Delete
-          </Button>
-          <div className="ml-2 flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <div className="flex items-center gap-1">
+            <Button variant="outline" disabled={!canUndo} onClick={undo}>
+              <ResetIcon className="size-4" />
+              Undo
+            </Button>
             <Button
               variant="outline"
-              size="icon"
-              aria-label="Zoom out"
-              disabled={zoomIndex === 0}
-              onClick={() => setZoomIndex(zoomIndex - 1)}
+              disabled={!canDelete}
+              onClick={deleteSelected}
             >
-              <ZoomOutIcon className="size-5" />
+              <TrashIcon className="size-4" />
+              Delete
             </Button>
-            <span className="w-14 text-center font-medium tabular-nums">
-              {Math.round(zoom * 100)}%
-            </span>
-            <Button
+            <Toggle
               variant="outline"
-              size="icon"
-              aria-label="Zoom in"
-              disabled={zoomIndex === zoomLevels.length - 1}
-              onClick={() => setZoomIndex(zoomIndex + 1)}
+              className="gap-2"
+              title="When on, dragging moves around the page instead of drawing"
+              pressed={isMoving}
+              onPressedChange={(pressed) => {
+                setIsMoving(pressed);
+                setDraft(undefined);
+              }}
             >
-              <ZoomInIcon className="size-5" />
-            </Button>
+              <HandIcon className="size-4" />
+              Move
+            </Toggle>
           </div>
+          <ZoomControls zoom={zoom} />
           {pages.length > 1 && (
-            <div className="ml-2 flex gap-1">
+            <div className="flex gap-1">
               <Button
                 variant="outline"
                 size="icon"
@@ -284,19 +279,31 @@ export function RedactionEditor({
           )}
         </div>
       </div>
-      <div ref={scrollAreaRef} className="max-h-[75vh] overflow-auto p-4">
-        <div className="relative mx-auto" style={{ width: `${zoom * 100}%` }}>
-          <Image
-            key={page.id}
-            src={page.url}
-            alt={`Page ${pageIndex + 1}`}
-            width={0}
-            height={0}
-            sizes="(min-width: 1024px) 75vw, 100vw"
-            unoptimized
-            draggable={false}
-            className="block h-auto w-full rounded-md bg-white shadow-sm select-none"
-          />
+      <ZoomArea
+        zoom={zoom}
+        dragToMove={isMoving}
+        className="h-[75vh] min-h-80"
+        magnified={
+          <div className="relative">
+            <PageImage key={page.id} page={page} alt="" />
+            {pageRectangles.map((rectangle) => (
+              <div
+                key={rectangle.id}
+                className="absolute bg-black"
+                style={toStyle(rectangle)}
+              />
+            ))}
+            {draftRectangle && (
+              <div
+                className="absolute bg-black/80"
+                style={toStyle(draftRectangle)}
+              />
+            )}
+          </div>
+        }
+      >
+        <div className="relative">
+          <PageImage key={page.id} page={page} alt={`Page ${pageIndex + 1}`} />
           <div
             role="presentation"
             onPointerDown={handlePointerDown}
@@ -306,6 +313,7 @@ export function RedactionEditor({
             className={cn(
               "absolute inset-0 touch-none select-none",
               disabled ? "cursor-not-allowed" : "cursor-crosshair",
+              isMoving && "pointer-events-none",
             )}
           >
             {pageRectangles.map((rectangle, index) => (
@@ -342,15 +350,15 @@ export function RedactionEditor({
                 <Cross2Icon className="size-4" />
               </Button>
             )}
-            {draft && (
+            {draftRectangle && (
               <div
                 className="pointer-events-none absolute bg-black/80"
-                style={toStyle(toRectangle(draft.start, draft.end))}
+                style={toStyle(draftRectangle)}
               />
             )}
           </div>
         </div>
-      </div>
+      </ZoomArea>
     </div>
   );
 }
