@@ -17,24 +17,33 @@ export const otherBrowserMessage =
  * @param savedPages The redacted images saved on the server.
  * @param localPages The unredacted images kept in this browser, null if there are none, or undefined while they load.
  * @param isUploaded Whether the submission was uploaded, possibly on another browser.
+ * @param toolbar Extra buttons shown in the toolbar above the images.
  */
 export function SubmissionImages({
   savedPages,
   localPages,
   isUploaded,
+  toolbar,
 }: {
   savedPages: ViewerPage[];
   localPages: LocalPage[] | null | undefined;
   isUploaded: boolean;
+  toolbar?: ReactNode;
 }) {
   if (savedPages.length > 0) {
-    return <PageViewer pages={savedPages} />;
+    return <PageViewer pages={savedPages} toolbar={toolbar} />;
   }
   if (localPages === undefined) {
     return <Skeleton className="h-80 rounded-xl" />;
   }
   if (localPages) {
-    return <PageViewer pages={localPages} badge={<LocalPagesBadge />} />;
+    return (
+      <PageViewer
+        pages={localPages}
+        badge={<LocalPagesBadge />}
+        toolbar={toolbar}
+      />
+    );
   }
   return (
     <EmptyPageViewer>
@@ -42,26 +51,5 @@ export function SubmissionImages({
         ? otherBrowserMessage
         : "The submission will appear here once it is uploaded."}
     </EmptyPageViewer>
-  );
-}
-
-/**
- * Shows the submission images on one side and the content of a step on the other side.
- *
- * @param images The submission images.
- * @param children The content of the step.
- */
-export function SideBySide({
-  images,
-  children,
-}: {
-  images: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <div className="grid items-start gap-6 xl:grid-cols-2">
-      <div className="min-w-0">{images}</div>
-      <div className="min-w-0">{children}</div>
-    </div>
   );
 }

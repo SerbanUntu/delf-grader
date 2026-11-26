@@ -7,8 +7,9 @@ import { ExamDetails } from "@/components/exam-details";
 import { SubmissionActions } from "@/components/item-actions";
 import { type BreadcrumbEntry, PageHeader } from "@/components/page-header";
 import { MissingItem, PageTitle } from "@/components/page-title";
+import { SideBySide, SideBySideButton } from "@/components/side-by-side";
 import { StudentLabel } from "@/components/student-label";
-import { SideBySide, SubmissionImages } from "@/components/submission-images";
+import { SubmissionImages } from "@/components/submission-images";
 import { api } from "@/convex/_generated/api";
 import { useFeedbackLanguage } from "@/lib/feedback-language";
 import { formatDate } from "@/lib/format";
@@ -67,6 +68,7 @@ export function SubmissionView({ submissionId }: { submissionId: string }) {
       savedPages={pages}
       localPages={localPages}
       isUploaded={isUploaded}
+      toolbar={<SideBySideButton />}
     />
   );
   const classHref = `/classes/${schoolClass._id}`;

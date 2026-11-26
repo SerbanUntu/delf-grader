@@ -38,13 +38,16 @@ export function PageImage({ page, alt }: { page: ViewerPage; alt: string }) {
  *
  * @param pages The page images in order.
  * @param badge A short label shown above the pages, such as "Not redacted yet".
+ * @param toolbar Extra buttons shown at the end of the toolbar above the pages.
  */
 export function PageViewer({
   pages,
   badge,
+  toolbar,
 }: {
   pages: ViewerPage[];
   badge?: ReactNode;
+  toolbar?: ReactNode;
 }) {
   const zoom = usePageZoom("viewer");
   const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -112,6 +115,7 @@ export function PageViewer({
               </Button>
             </div>
           )}
+          {toolbar}
         </div>
       </div>
       <ZoomArea
