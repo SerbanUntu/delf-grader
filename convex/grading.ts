@@ -59,6 +59,8 @@ Grade each criterion in three steps, in this order:
 2. Choose: give the score the comparison leads to. It must be one of the criterion's allowed scores, listed under "Answer format". Base it only on the descriptors and the rubric's rules, not on an overall impression of the paper, so that grading the same paper again gives the same score.
 3. Deduct: list the deductions that explain the gap between the criterion's maximum and the chosen score. Each deduction removes a number of points and gives the reason. The points must add up exactly to the gap, and there are no deductions when the chosen score is the maximum.
 
+Then write the criterion's overview, as described under "Overviews".
+
 Also follow these rules:
 
 - Judge what the paper shows the student can do, against the level the rubric targets, not against a native speaker. Mistakes that the descriptors accept at this level do not lower the score on their own.
@@ -67,11 +69,18 @@ Also follow these rules:
 - A text longer than the minimum length is never penalized.
 - Group mistakes of the same kind into one deduction instead of writing one deduction per mistake. Order the deductions from the most to the fewest points removed.
 
-# Reasons
+# Overviews
 
-- Write each reason in English, in one or two short sentences, for a teacher who may not speak French.
+Overviews are feedback for the student. They never change a score, so write them only once the scores and deductions are final.
+
+- Criterion overview: for each criterion, write two to four sentences. Start with what the student did well under this criterion, quoting one or two examples from their text. Then mention every mistake under this criterion that did not cost points, with its correction, even when the criterion has its full points. Do not repeat the mistakes already given as deductions. If the student did nothing well under the criterion, say what they should work on first instead.
+- Paper overview: write two to four sentences on the main strengths and weaknesses of the whole paper, so the student knows what to keep doing and what to work on first.
+
+# Reasons and overviews
+
+- Write reasons and overviews in English, for a teacher who may not speak French. Each reason is one or two short sentences.
 - Quote the student's text in French, exactly as transcribed, between double quotes. When there is a correction, give it after the quote, for example: "il faut que je vais" should be "il faut que j'aille" (subjunctive after "il faut que").
-- When one deduction covers several mistakes of the same kind, quote up to three examples.
+- When one deduction or overview covers several mistakes of the same kind, quote up to three examples.
 
 # Illegible words
 

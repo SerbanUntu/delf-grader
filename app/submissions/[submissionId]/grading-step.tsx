@@ -134,6 +134,15 @@ function GradingResultView({
 
       <Warnings rubric={rubric} result={result} wordCount={wordCount} />
 
+      {result.overview && (
+        <section className="rounded-xl border bg-card p-5">
+          <h3 className="text-lg leading-snug font-semibold">Overview</h3>
+          <p className="mt-2 whitespace-pre-line wrap-break-word">
+            {result.overview}
+          </p>
+        </section>
+      )}
+
       <ol className="grid gap-4">
         {result.criteria.map((criterionResult) => {
           const criterion = rubric.criteria.find(
@@ -252,6 +261,11 @@ function CriterionView({
           {getLevelLabel(criterion, result.score)}
         </span>
       </p>
+      {result.overview && (
+        <p className="mt-4 whitespace-pre-line wrap-break-word">
+          {result.overview}
+        </p>
+      )}
       {result.deductions.length > 0 ? (
         <ul className="mt-4 grid gap-3">
           {result.deductions.map((deduction) => (

@@ -21,6 +21,7 @@ export const gradingResultValidator = v.object({
     v.object({
       criterionId: criterionIdValidator,
       score: v.number(),
+      overview: v.optional(v.string()),
       deductions: v.array(
         v.object({
           points: v.number(),
@@ -30,6 +31,7 @@ export const gradingResultValidator = v.object({
       ),
     }),
   ),
+  overview: v.optional(v.string()),
   totalScore: v.number(),
 });
 
@@ -117,11 +119,21 @@ export function buildGraderSchema(rubric: Rubric) {
                 .describe(
                   "The deductions that explain the gap between the maximum and the chosen score. Empty when the score is the maximum.",
                 ),
+              overview: z
+                .string()
+                .describe(
+                  "Two to four sentences on what the student did well under this criterion, quoting their text, followed by every mistake under this criterion that did not cost points.",
+                ),
             })
             .describe(criterion.frenchName),
         ]),
       ),
     ),
+    overview: z
+      .string()
+      .describe(
+        "Two to four sentences on the main strengths and weaknesses of the whole paper.",
+      ),
   });
 }
 
@@ -201,7 +213,7 @@ function scoreFromAnswer(
       `The answer does not grade the criterion "${criterion.id}".`,
     );
   }
-  const { score, deductions } = criterionAnswer;
+  const { score, deductions, overview } = criterionAnswer;
   const maximum = formatNumber(criterion.maxScore);
   if (!criterion.levels.some((level) => level.score === score)) {
     throw new GraderAnswerError(
@@ -227,6 +239,7 @@ function scoreFromAnswer(
   return {
     criterionId: criterion.id as CriterionId,
     score,
+    overview,
     deductions: deductions.map((deduction) => ({
       points: roundScore(deduction.points),
       reason: deduction.reason,
@@ -304,6 +317,7 @@ export function computeGradingResult(
     textType: answer?.textType ?? null,
     anomalies,
     criteria,
+    ...(answer && { overview: answer.overview }),
     totalScore: roundScore(
       criteria.reduce((sum, criterion) => sum + criterion.score, 0),
     ),
