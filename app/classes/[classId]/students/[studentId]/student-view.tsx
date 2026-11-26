@@ -4,6 +4,8 @@ import { useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import type { ReactNode } from "react";
 import {
+  CriterionCard,
+  MissingCriterionNote,
   MistakeCategoryList,
   pluralizeSubmissions,
   Stat,
@@ -14,7 +16,7 @@ import { MissingItem, PageTitle, SectionTitle } from "@/components/page-title";
 import { IdentifyButton } from "@/components/student-label";
 import { SubmissionCard } from "@/components/submission-card";
 import { api } from "@/convex/_generated/api";
-import type { StudentCriterionAnalytics } from "@/lib/analytics";
+import type { AnalyticsCriterionSummary } from "@/lib/analytics";
 import { formatPercent } from "@/lib/format";
 import { analyticsCriteria } from "@/lib/rubrics";
 import {
@@ -177,7 +179,7 @@ function CriterionView({
   analytics,
   exams,
 }: {
-  analytics: StudentCriterionAnalytics;
+  analytics: AnalyticsCriterionSummary;
   exams: StudentExam[];
 }) {
   const criterion = analyticsCriteria.find(
@@ -194,26 +196,22 @@ function CriterionView({
   }
 
   return (
-    <li className="min-w-0 rounded-xl border bg-card p-5">
-      <h3 className="text-lg leading-snug font-semibold">
-        {criterion.frenchName}
-      </h3>
-      <p className="text-muted-foreground">{criterion.englishSubtitle}</p>
-
+    <CriterionCard
+      frenchName={criterion.frenchName}
+      englishSubtitle={criterion.englishSubtitle}
+    >
       <dl className="mt-4 grid gap-3 sm:grid-cols-2">
         <Stat term="Average points kept">
           {formatPercent(analytics.averagePercentKept)}
         </Stat>
         <Stat term="Newest exam">{formatPercent(newest.percent)}</Stat>
       </dl>
-      {analytics.examCount < exams.length && (
-        <p className="mt-3 text-sm text-muted-foreground">
-          Based on {analytics.examCount} of {exams.length} submissions. The
-          rubric of the others has no criterion for it.
-        </p>
-      )}
+      <MissingCriterionNote
+        examCount={analytics.examCount}
+        totalCount={exams.length}
+      />
 
       <PercentChart points={points} criterionName={criterion.frenchName} />
-    </li>
+    </CriterionCard>
   );
 }

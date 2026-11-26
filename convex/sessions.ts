@@ -6,6 +6,7 @@ import { getRubric } from "../lib/rubrics";
 import { mutation, query } from "./_generated/server";
 import { findOwned, requireOwned, requireTeacherId } from "./access";
 import {
+  collectAnalyticsResults,
   deleteSession,
   restartGrading,
   withDisplayName,
@@ -61,15 +62,9 @@ export const getAnalytics = query({
       .query("submissions")
       .withIndex("by_sessionId", (q) => q.eq("sessionId", session._id))
       .take(listLimit);
-    const results = submissions.flatMap((submission) =>
-      submission.grading?.status === "done" ? [submission.grading.result] : [],
-    );
-    const pendingCount = submissions.filter(
-      ({ grading }) =>
-        grading?.status === "inProgress" ||
-        (grading?.status === "done" &&
-          grading.result.rubricId !== session.rubricId),
-    ).length;
+    const { results, pendingCount } = collectAnalyticsResults([
+      { submissions, rubricId: session.rubricId },
+    ]);
     return {
       rubricId: session.rubricId,
       pendingCount,

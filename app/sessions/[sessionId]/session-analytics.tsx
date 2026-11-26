@@ -10,7 +10,11 @@ import {
   YAxis,
 } from "recharts";
 import {
-  MistakeCategoryList,
+  AnomalyList,
+  CriterionCard,
+  CriterionMistakeCategories,
+  EmptyAnalytics,
+  getPendingMessage,
   pluralizeSubmissions,
   Stat,
 } from "@/components/analytics";
@@ -43,21 +47,17 @@ export function SessionAnalytics({ sessionId }: { sessionId: Id<"sessions"> }) {
     return null;
   }
 
-  const pendingMessage =
-    analytics && analytics.pendingCount > 0
-      ? `${pluralizeSubmissions(analytics.pendingCount)} ${analytics.pendingCount === 1 ? "is" : "are"} being graded and will be included once grading is done.`
-      : null;
-
   if (!analytics || analytics.gradedCount === 0) {
     return (
-      <div className="rounded-xl border border-dashed px-6 py-10 text-center text-muted-foreground">
-        <p>Analytics will appear here once submissions are graded.</p>
-        {pendingMessage && <p className="mt-2">{pendingMessage}</p>}
-      </div>
+      <EmptyAnalytics
+        message="Analytics will appear here once submissions are graded."
+        pendingCount={analytics?.pendingCount ?? 0}
+      />
     );
   }
 
   const rubric = getRubric(analytics.rubricId);
+  const pendingMessage = getPendingMessage(analytics.pendingCount);
 
   return (
     <div className="grid gap-6">
@@ -87,42 +87,7 @@ export function SessionAnalytics({ sessionId }: { sessionId: Id<"sessions"> }) {
         })}
       </ol>
 
-      {analytics.anomalies.length > 0 && (
-        <section className="rounded-xl border bg-card p-5">
-          <h3 className="text-lg leading-snug font-semibold">Anomalies</h3>
-          <ul className="mt-3 grid gap-2">
-            {analytics.anomalies.map(({ anomalyId, count }) => {
-              const anomaly = rubric.anomalies.find(
-                (candidate) => candidate.id === anomalyId,
-              );
-              return (
-                anomaly && (
-                  <li
-                    key={anomaly.id}
-                    className="flex flex-wrap items-baseline justify-between gap-x-4"
-                  >
-                    <span>
-                      <span className="font-medium">{anomaly.frenchName}</span>{" "}
-                      <span className="text-muted-foreground">
-                        ({anomaly.englishSubtitle})
-                      </span>
-                    </span>
-                    <span
-                      className={
-                        count > 0
-                          ? "font-semibold tabular-nums"
-                          : "text-muted-foreground tabular-nums"
-                      }
-                    >
-                      {pluralizeSubmissions(count)}
-                    </span>
-                  </li>
-                )
-              );
-            })}
-          </ul>
-        </section>
-      )}
+      <AnomalyList anomalies={analytics.anomalies} />
     </div>
   );
 }
@@ -137,19 +102,11 @@ function CriterionView({
   gradedCount: number;
 }) {
   return (
-    <li className="min-w-0 rounded-xl border bg-card p-5">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h3 className="text-lg leading-snug font-semibold">
-            {criterion.frenchName}
-          </h3>
-          <p className="text-muted-foreground">{criterion.englishSubtitle}</p>
-        </div>
-        <p className="shrink-0 text-muted-foreground tabular-nums">
-          out of {formatNumber(criterion.maxScore)}
-        </p>
-      </div>
-
+    <CriterionCard
+      frenchName={criterion.frenchName}
+      englishSubtitle={criterion.englishSubtitle}
+      aside={`out of ${formatNumber(criterion.maxScore)}`}
+    >
       <dl className="mt-4 grid gap-3 sm:grid-cols-3">
         <Stat term="Lost points">
           {analytics.lostPointsCount} of {pluralizeSubmissions(gradedCount)}
@@ -164,13 +121,8 @@ function CriterionView({
 
       <ScoreChart criterion={criterion} analytics={analytics} />
       <LevelLegend criterion={criterion} />
-      {analytics.mistakeCategories.length > 0 && (
-        <section className="mt-5">
-          <h4 className="mb-2 font-medium">Mistake categories</h4>
-          <MistakeCategoryList counts={analytics.mistakeCategories} />
-        </section>
-      )}
-    </li>
+      <CriterionMistakeCategories counts={analytics.mistakeCategories} />
+    </CriterionCard>
   );
 }
 

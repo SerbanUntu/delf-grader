@@ -7,10 +7,31 @@ import {
   getRubric,
   type MistakeCategoryId,
   type Rubric,
+  rubrics,
 } from "./rubrics";
 import { roundScore } from "./scores";
 
 type Deduction = GradingResult["criteria"][number]["deductions"][number];
+
+export const defaultClassAnalyticsSessionCount = 5;
+
+export const maxClassAnalyticsSessionCount = 50;
+
+/**
+ * Keeps the number of sessions covered by class analytics between 1 and the maximum.
+ *
+ * @param count The number of sessions asked for.
+ * @returns A whole number from 1 to the maximum, or the default when the number is not valid.
+ */
+export function clampClassAnalyticsSessionCount(count: number): number {
+  if (Number.isNaN(count)) {
+    return defaultClassAnalyticsSessionCount;
+  }
+  return Math.min(
+    Math.max(Math.round(count), 1),
+    maxClassAnalyticsSessionCount,
+  );
+}
 
 /**
  * How often a mistake category appears in a group of submissions.
@@ -74,26 +95,56 @@ export interface CriterionAnalytics {
 }
 
 /**
+ * How many submissions an anomaly was found in.
+ */
+export interface AnomalyCount {
+  anomalyId: AnomalyId;
+  count: number;
+}
+
+/**
+ * Counts how many grading results each anomaly of the given rubrics was found in. An anomaly that several rubrics share is listed once.
+ *
+ * @param usedRubrics The rubrics whose anomalies are listed, in the order they are shown.
+ * @param results The grading results.
+ * @returns The anomalies with their counts, including those never found.
+ */
+export function countAnomalies(
+  usedRubrics: readonly Rubric[],
+  results: GradingResult[],
+): AnomalyCount[] {
+  const anomalyIds = new Set(
+    usedRubrics.flatMap((rubric) =>
+      rubric.anomalies.map((anomaly) => anomaly.id as AnomalyId),
+    ),
+  );
+  return Array.from(anomalyIds, (anomalyId) => ({
+    anomalyId,
+    count: results.filter((result) => result.anomalies.includes(anomalyId))
+      .length,
+  }));
+}
+
+/**
  * The aggregates of the graded submissions of a session, which never identify a submission or a student.
  */
 export interface SessionAnalytics {
   gradedCount: number;
   criteria: CriterionAnalytics[];
-  anomalies: { anomalyId: AnomalyId; count: number }[];
+  anomalies: AnomalyCount[];
 }
 
 /**
  * Computes the aggregates of a session for every criterion and anomaly of its rubric.
  *
  * @param rubric The rubric of the session.
- * @param results The grading results of the session's submissions. Results graded with another rubric are left out.
+ * @param graded The grading results of the session's submissions, all graded with its rubric.
  * @returns The aggregates.
  */
 export function computeSessionAnalytics(
   rubric: Rubric,
-  results: GradingResult[],
+  graded: GradingResult[],
 ): SessionAnalytics {
-  const graded = results.filter((result) => result.rubricId === rubric.id);
   const criteria = rubric.criteria.map((criterion): CriterionAnalytics => {
     const criterionResults = graded.flatMap(
       (result) =>
@@ -123,19 +174,32 @@ export function computeSessionAnalytics(
       ),
     };
   });
-  const anomalies = rubric.anomalies.map((anomaly) => ({
-    anomalyId: anomaly.id as AnomalyId,
-    count: graded.filter((result) =>
-      result.anomalies.some((anomalyId) => anomalyId === anomaly.id),
-    ).length,
-  }));
-  return { gradedCount: graded.length, criteria, anomalies };
+  return {
+    gradedCount: graded.length,
+    criteria,
+    anomalies: countAnomalies([rubric], graded),
+  };
 }
 
 /**
  * The share of points kept in each analytics criterion of one exam, from 0 to 100. Analytics criteria that the exam's rubric has no criterion for are missing.
  */
 export type PercentsKept = Partial<Record<AnalyticsCriterionId, number>>;
+
+function getAnalyticsCriterionResults(
+  result: GradingResult,
+  analyticsCriterionId: AnalyticsCriterionId,
+) {
+  return getRubric(result.rubricId).criteria.flatMap((criterion) => {
+    const criterionResult = result.criteria.find(
+      (candidate) => candidate.criterionId === criterion.id,
+    );
+    return criterion.analyticsCriterionId === analyticsCriterionId &&
+      criterionResult
+      ? [{ ...criterionResult, maxScore: criterion.maxScore }]
+      : [];
+  });
+}
 
 /**
  * Computes the share of points kept in each analytics criterion of a grading result, which is the sum of the scores of its rubric criteria as a percentage of the sum of their maximums.
@@ -144,23 +208,17 @@ export type PercentsKept = Partial<Record<AnalyticsCriterionId, number>>;
  * @returns The percentages, by analytics criterion.
  */
 export function getPercentsKept(result: GradingResult): PercentsKept {
-  const rubric = getRubric(result.rubricId);
   const percents: PercentsKept = {};
   for (const analyticsCriterion of analyticsCriteria) {
-    let score = 0;
-    let maxScore = 0;
-    for (const criterion of rubric.criteria) {
-      const criterionResult = result.criteria.find(
-        (candidate) => candidate.criterionId === criterion.id,
-      );
-      if (
-        criterion.analyticsCriterionId === analyticsCriterion.id &&
-        criterionResult
-      ) {
-        score += criterionResult.score;
-        maxScore += criterion.maxScore;
-      }
-    }
+    const criterionResults = getAnalyticsCriterionResults(
+      result,
+      analyticsCriterion.id,
+    );
+    const score = criterionResults.reduce((sum, { score }) => sum + score, 0);
+    const maxScore = criterionResults.reduce(
+      (sum, { maxScore }) => sum + maxScore,
+      0,
+    );
     if (maxScore > 0) {
       percents[analyticsCriterion.id] = roundScore((score / maxScore) * 100);
     }
@@ -169,24 +227,28 @@ export function getPercentsKept(result: GradingResult): PercentsKept {
 }
 
 /**
- * The aggregates of one analytics criterion over the graded exams of a student.
+ * The aggregates of one analytics criterion over graded exams that can use different rubrics.
  */
-export interface StudentCriterionAnalytics {
+export interface AnalyticsCriterionSummary {
   analyticsCriterionId: AnalyticsCriterionId;
   examCount: number;
+  lostPointsCount: number;
   averagePercentKept: number;
+  mistakeCategories: MistakeCategoryCount[];
 }
 
 /**
- * Computes the statistics of a student over their graded exams, which can use different rubrics.
+ * Computes the aggregates of each analytics criterion over graded exams that can use different rubrics. Exams whose rubric has no criterion for an analytics criterion are left out of it.
  *
- * @param results The grading results of the student's exams.
- * @returns For each analytics criterion that at least one exam has, the average percentage of points kept, and the mistake categories found, sorted from the most to the fewest exams.
+ * @param results The grading results of the exams.
+ * @returns For each analytics criterion that at least one exam has, how many exams have it and lost points on it, the average percentage of points kept and the mistake categories found.
  */
-export function computeStudentAnalytics(results: GradingResult[]) {
+export function summarizeAnalyticsCriteria(
+  results: GradingResult[],
+): AnalyticsCriterionSummary[] {
   const percents = results.map(getPercentsKept);
-  const criteria = analyticsCriteria.flatMap(
-    (analyticsCriterion): StudentCriterionAnalytics[] => {
+  return analyticsCriteria.flatMap(
+    (analyticsCriterion): AnalyticsCriterionSummary[] => {
       const values = percents.flatMap(
         (examPercents) => examPercents[analyticsCriterion.id] ?? [],
       );
@@ -198,15 +260,52 @@ export function computeStudentAnalytics(results: GradingResult[]) {
         {
           analyticsCriterionId: analyticsCriterion.id,
           examCount: values.length,
+          lostPointsCount: values.filter((value) => value < 100).length,
           averagePercentKept: roundScore(total / values.length),
+          mistakeCategories: countMistakeCategories(
+            results.map((result) =>
+              getAnalyticsCriterionResults(
+                result,
+                analyticsCriterion.id,
+              ).flatMap(({ deductions }) => deductions),
+            ),
+          ),
         },
       ];
     },
   );
-  const mistakeCategories = countMistakeCategories(
-    results.map((result) =>
-      result.criteria.flatMap((criterion) => criterion.deductions),
+}
+
+/**
+ * Computes the statistics of a student over their graded exams, which can use different rubrics.
+ *
+ * @param results The grading results of the student's exams.
+ * @returns The aggregates of each analytics criterion, and the mistake categories found over all criteria, sorted from the most to the fewest exams.
+ */
+export function computeStudentAnalytics(results: GradingResult[]) {
+  return {
+    criteria: summarizeAnalyticsCriteria(results),
+    mistakeCategories: countMistakeCategories(
+      results.map((result) =>
+        result.criteria.flatMap((criterion) => criterion.deductions),
+      ),
     ),
+  };
+}
+
+/**
+ * Computes the aggregates of recent graded exams of a class, which can use different rubrics and never identify a submission or a student.
+ *
+ * @param results The grading results of the exams.
+ * @returns The number of exams, the aggregates of each analytics criterion and how many exams each anomaly of their rubrics was found in.
+ */
+export function computeClassAnalytics(results: GradingResult[]) {
+  const usedRubrics = rubrics.filter((rubric) =>
+    results.some((result) => result.rubricId === rubric.id),
   );
-  return { criteria, mistakeCategories };
+  return {
+    gradedCount: results.length,
+    criteria: summarizeAnalyticsCriteria(results),
+    anomalies: countAnomalies(usedRubrics, results),
+  };
 }

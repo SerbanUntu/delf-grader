@@ -5,7 +5,7 @@ import {
   type MistakeCategory,
   type MistakeCategoryId,
 } from "./analytics-criteria";
-import type { Criterion, Rubric } from "./base";
+import type { Anomaly, Criterion, Rubric } from "./base";
 import { newB1 } from "./new-b1";
 import { newB2 } from "./new-b2";
 import { oldB1 } from "./old-b1";
@@ -101,6 +101,23 @@ export function getMistakeCategory(id: MistakeCategoryId): MistakeCategory {
     throw new Error(`Unknown mistake category: ${id}`);
   }
   return category;
+}
+
+/**
+ * Finds an anomaly by its ID, with its name in the first rubric that has it.
+ *
+ * @param id The anomaly ID.
+ * @returns The anomaly.
+ * @throws If no rubric has this anomaly.
+ */
+export function getAnomaly(id: AnomalyId): Anomaly {
+  const anomaly = rubrics
+    .flatMap<Anomaly>((rubric) => rubric.anomalies)
+    .find((candidate) => candidate.id === id);
+  if (!anomaly) {
+    throw new Error(`Unknown anomaly: ${id}`);
+  }
+  return anomaly;
 }
 
 /**

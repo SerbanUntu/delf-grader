@@ -27,9 +27,10 @@ import {
   useStudentKeys,
   useStudentNames,
 } from "@/lib/students";
+import { ClassAnalytics } from "./class-analytics";
 
 /**
- * The page of a class, with its sessions, its individual submissions and its students.
+ * The page of a class, with its sessions, its individual submissions, its students and its analytics.
  *
  * @param classId The class ID read from the URL.
  */
@@ -175,6 +176,8 @@ export function ClassView({ classId }: { classId: string }) {
               )}
             />
           </section>
+
+          <ClassAnalytics classId={schoolClass._id} />
 
           <ExamDialog
             open={isCreatingSession}

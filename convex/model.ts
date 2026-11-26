@@ -1,5 +1,7 @@
 import { defaultSessionName } from "../lib/format";
+import type { GradingResult } from "../lib/grading";
 import type { FeedbackLanguage } from "../lib/languages";
+import type { RubricId } from "../lib/rubrics";
 import { getMedian, roundScore } from "../lib/scores";
 import { getStepStatuses, getSubmissionBadge } from "../lib/steps";
 import { internal } from "./_generated/api";
@@ -32,6 +34,32 @@ export function getScore(submission: Doc<"submissions">): number | null {
   return submission.grading?.status === "done"
     ? submission.grading.result.totalScore
     : null;
+}
+
+/**
+ * Collects the grading results counted in analytics, leaving out submissions still graded with an earlier rubric of their exam.
+ *
+ * @param exams The submissions of each exam, with the rubric the exam uses now.
+ * @returns The grading results counted, and how many submissions are being graded or re-graded.
+ */
+export function collectAnalyticsResults(
+  exams: { submissions: Doc<"submissions">[]; rubricId: RubricId }[],
+) {
+  const results: GradingResult[] = [];
+  let pendingCount = 0;
+  for (const { submissions, rubricId } of exams) {
+    for (const { grading } of submissions) {
+      if (grading?.status === "done" && grading.result.rubricId === rubricId) {
+        results.push(grading.result);
+      } else if (
+        grading?.status === "inProgress" ||
+        grading?.status === "done"
+      ) {
+        pendingCount++;
+      }
+    }
+  }
+  return { results, pendingCount };
 }
 
 /**
