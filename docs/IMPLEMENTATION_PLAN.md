@@ -74,7 +74,7 @@ Everything in this plan is in scope for the current milestone, except items mark
 ### Pages
 
 - Home page: a grid of class cards and a "New class" button.
-- Class page: two separate sections, "Sessions" and "Individual submissions", each with a grid of cards and a button to create a new item. A third section, "Students", is described in "Student analytics".
+- Class page: two separate sections, "Sessions" and "Individual submissions", each with a grid of cards and a button to create a new item. A third section, "Students", is described in "Student analytics", and a fourth, "Analytics", in "Class analytics".
 - Session page: two tabs, "Submissions" (a grid of submission cards and an "Add submission" button) and "Analytics" (see "Session analytics"). The session's name, exam date, rubric and question can be viewed and edited from this page.
 - Submission page: see "Submission workflow" and "Submission screens".
 
@@ -139,17 +139,17 @@ A submission goes through four steps:
 - The image side shows the redacted images from Convex. If they are not saved yet, it falls back to the local uploaded images, and then to a blank area saying that the submission will appear there once it is uploaded. Multi-page submissions can be scrolled or paged through.
 - The divider between the two sides can be dragged to resize them (shadcn/ui Resizable), and a button in the image side's toolbar switches between side by side (the default) and one above the other. Both choices are remembered in local storage and apply to every screen. Below 768px wide, the two sides are always one above the other.
 - The grading screen shows:
-  - The "Notes" text area at the top (see "Notes").
   - The total score out of 25 with the colored progress circle.
   - The word count and the text type the grader inferred from the question (for example "Expected text type: lettre formelle").
   - A warning banner for every detected anomaly (for example an off-topic answer or an answer that is too short).
   - The overview of the whole paper.
   - For each criterion: its French name with an English subtitle, the score out of its maximum, the level label for that score, the criterion overview, and the list of deductions (points removed, the reason and, with mistake categories, its categories).
   - The "Re-grade", "Copy feedback" and "Download PDF" buttons.
+  - The "Notes" text area at the bottom, below the grading result (see "Notes").
 
 ### Notes
 
-- Notes are a plain text area at the top of the grading screen. There is no separate notes screen or "Notes" button, so notes can be written once the grading screen is reached.
+- Notes are a plain text area at the bottom of the grading screen. There is no separate notes screen or "Notes" button, so notes can be written once the grading screen is reached.
 - Notes exist on submissions only and are kept for future reference. Re-grading or re-running steps keeps them.
 - A hint under the field says "Do not include student names", because notes are saved on the server.
 - Notes are saved automatically, with a "Saving..." or "Saved automatically" label and no "Save" button. The first change after a save starts a 5-second timer, and further typing does not restart it, so notes are saved at least every 5 seconds while the teacher types continuously. Unsaved changes are also saved when the field loses focus and when the teacher leaves the page.
@@ -189,14 +189,15 @@ A submission goes through four steps:
 - Everything else (Convex validators, the grader's output schema, the grading screen, the export, analytics) is derived from the rubric data, so any code that must be updated after a change fails to type-check.
 - Each rubric holds:
   - An ID, a display name, the CEFR level, the grid (Pre-Sept. 2022 or new) and the minimum word count.
-  - The list of criteria. Each criterion has an ID, a French name, a short English subtitle, its maximum points, the list of allowed scores, the level label for each allowed score and its analytics criterion (see "Analytics criteria"). New grids allow only 0, 1, 3 and 5 (labeled with the bands from RUBRICS.md). Pre-Sept. 2022 grids allow every 0.5 step from 0 to the maximum.  - The rules applied by code: length thresholds, the "too short" threshold and the anomaly caps.
+  - The list of criteria. Each criterion has an ID, a French name, a short English subtitle, its maximum points, the list of allowed scores, the level label for each allowed score and its analytics criterion (see "Analytics criteria"). New grids allow only 0, 1, 3 and 5 (labeled with the bands from RUBRICS.md). Pre-Sept. 2022 grids allow every 0.5 step from 0 to the maximum.
+  - The rules applied by code: length thresholds, the "too short" threshold and the anomaly caps.
 - In the Pre-Sept. 2022 grids, "Respect de la consigne" is split into two criteria: "situation" (graded by the AI, 0 to 1) and "length" (applied by code from the word count, 0 to 1).
   - A `systemPrompt` field: the grader's instructions for this rubric, written from the criterion descriptions and grading explanations in RUBRICS.md. These descriptions are not part of the typed data.
 - Instructions that are the same for every rubric (inferring the text type, the deduction format, handling `[illegible]` words, the overviews) are written once in the grader code.
 
 ### Analytics criteria
 
-- The analytics criteria are a simpler, higher-level set of criteria that covers every rubric. They are used to compare exams graded with different rubrics (see "Student analytics") and to hold the mistake categories. They are defined once in `lib/rubrics/`, with an ID, a French name and an English subtitle each.
+- The analytics criteria are a simpler, higher-level set of criteria that covers every rubric. They are used to compare exams graded with different rubrics (see "Class analytics" and "Student analytics") and to hold the mistake categories. They are defined once in `lib/rubrics/`, with an ID, a French name and an English subtitle each.
 - They are the five criteria of the new grids: task (Réalisation de la tâche), coherence (Cohérence et cohésion), sociolinguistic (Adéquation sociolinguistique), vocabulary (Lexique) and grammar (Morphosyntaxe).
 - Every rubric criterion names its analytics criterion, checked by the type system. The new grids map each criterion to the one with the same name. The Pre-Sept. 2022 grids map:
   - situation, length, facts, opinion (B1) and argument (B2) to task.
@@ -216,7 +217,7 @@ A submission goes through four steps:
   - sociolinguistic: Registre (Register and tone), Tutoiement et vouvoiement (Choosing tu or vous), Formules d'usage (Greetings and closings).
   - vocabulary: Étendue du lexique (Range and repetition), Choix des mots (Word choice), Orthographe lexicale (Spelling).
   - grammar: Conjugaison (Verb forms), Temps et modes (Tenses and moods), Accords (Agreement), Déterminants et prépositions (Articles and prepositions), Construction des phrases (Sentence structure).
-- Categories are shown on each deduction on the grading screen, in the exported feedback (French name), in session analytics and in student analytics.
+- Categories are shown on each deduction on the grading screen, in the exported feedback (French name), in session analytics, in class analytics and in student analytics.
 
 ### Transcriber
 
@@ -269,6 +270,16 @@ A submission goes through four steps:
 - It also shows how many times each anomaly was found.
 - Charts use shadcn/ui Chart.
 - Individual submissions have no session analytics.
+
+## Class analytics
+
+- The "Analytics" section of the class page shows aggregates of the class's recent graded submissions. It looks like session analytics and reuses its components and code. It never lists submissions or students one by one.
+- It covers the N newest sessions (by exam date) with at least one graded submission. N is 5 by default and can be changed in the section, and the choice is remembered per class in local storage.
+- It also covers the individual submissions whose exam date is after the exam date of the oldest of these sessions. Individual submissions from that same day are left out, because they may be older. When no session is covered, no individual submission is covered either.
+- Submissions still graded with an earlier rubric of their session are left out.
+- The exams can use different rubrics, so the criteria shown are the analytics criteria. For each one, it shows how many submissions lost points on it and the average percentage of points lost (see "Analytics criteria"). Exams whose rubric has no criterion for it are left out of it. There is no bar chart of scores, because the allowed scores differ between rubrics.
+- With mistake categories, it shows the same category list as session analytics.
+- It also shows how many times each anomaly was found, under its name in its rubric.
 
 ## Student analytics
 
@@ -324,7 +335,7 @@ The work is tracked as GitHub issues, done in this order. Each issue only depend
 - #11: Adds the drawing tool for hiding personal information before the images are sent to Convex.
 - #12: Adds student names, stored only in the browser, and the anonymous student IDs sent to Convex.
 - #13: Adds the statistics, cover images and status badges on cards, plus sorting and filtering.
-- #14: Adds the auto-saved notes at the top of the grading screen.
+- #14: Adds the auto-saved notes at the bottom of the grading screen.
 - #15: Fills the session "Analytics" tab with aggregates per criterion and anomaly counts.
 - #26: Lets the teacher add more files after the first pick, mix images and PDFs, and reorder or remove pages.
 - #27: Adds the shared standard zoom and magnifier to every view of a student's pages.
@@ -335,6 +346,7 @@ The work is tracked as GitHub issues, done in this order. Each issue only depend
 - #30: Adds exporting and importing student names as a file, and the "Import Student Names" help dialog.
 - #21: Adds the analytics criteria and mistake categories on deductions, shown on the grading screen, in the export and in session analytics.
 - #19: Shows analytics for one student across several exams, based on the anonymous student ID.
+- #35: Adds the "Analytics" section of the class page, covering its newest sessions and recent individual submissions through the analytics criteria.
 - #22: Lets the teacher resize the side-by-side screens and switch between a horizontal and a vertical layout.
 - #16: Reviews every page for legibility and checks that nothing breaks on small screens.
 - #23: Adds the branding (logo, icon, tab titles, social card) and the search engine files.

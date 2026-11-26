@@ -21,6 +21,7 @@ import {
   useStudentKeys,
   useStudentNames,
 } from "@/lib/students";
+import { SessionAnalytics } from "./session-analytics";
 
 /**
  * The page of a session, with its exam, its submissions and its analytics.
@@ -134,9 +135,7 @@ export function SessionView({ sessionId }: { sessionId: string }) {
             />
           </TabsContent>
           <TabsContent value="analytics" className="mt-6">
-            <p className="rounded-xl border border-dashed px-6 py-10 text-center text-muted-foreground">
-              Common mistakes will appear here once submissions are graded.
-            </p>
+            <SessionAnalytics sessionId={session._id} />
           </TabsContent>
         </Tabs>
 

@@ -65,11 +65,6 @@ export function GradingStep({
           </Button>
         )}
       </div>
-      <NotesField
-        key={submissionId}
-        submissionId={submissionId}
-        notes={notes}
-      />
       <FormError message={error} />
       {grading?.status === "inProgress" && (
         <StepInProgress>
@@ -91,6 +86,11 @@ export function GradingStep({
           Grading starts once the transcription is done.
         </p>
       )}
+      <NotesField
+        key={submissionId}
+        submissionId={submissionId}
+        notes={notes}
+      />
 
       <ConfirmDialog
         open={isConfirming}

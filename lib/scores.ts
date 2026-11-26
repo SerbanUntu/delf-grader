@@ -68,3 +68,17 @@ export function getMedian(scores: number[]): number | null {
     ? sorted[middle]
     : roundScore((sorted[middle - 1] + sorted[middle]) / 2);
 }
+
+const levelBarColors = ["#dc2626", "#f97316", "#facc15", "#84cc16", "#059669"];
+
+/**
+ * Finds the color of a bar in the analytics charts, which goes from red for 0 through yellow to green for the maximum score.
+ *
+ * @param score The score of a criterion.
+ * @param maxScore The maximum score of the criterion.
+ * @returns The bar color.
+ */
+export function getLevelBarColor(score: number, maxScore: number): string {
+  const share = maxScore > 0 ? Math.min(Math.max(score / maxScore, 0), 1) : 0;
+  return levelBarColors[Math.round(share * (levelBarColors.length - 1))];
+}
