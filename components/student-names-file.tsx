@@ -144,9 +144,7 @@ export function useStudentNamesFile(): {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{message?.title}</DialogTitle>
-            <DialogDescription className="text-base">
-              {message?.text}
-            </DialogDescription>
+            <DialogDescription>{message?.text}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button onClick={() => setMessage(undefined)}>OK</Button>

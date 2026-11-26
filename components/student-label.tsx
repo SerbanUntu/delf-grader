@@ -93,7 +93,7 @@ export function IdentifyButton({
       <Button
         variant="outline"
         size="sm"
-        className="relative z-10 text-base text-foreground"
+        className="relative z-10 text-foreground"
         onClick={() => setIsIdentifying(true)}
       >
         Identify
@@ -153,7 +153,7 @@ function IdentifyForm({
         >
           <DialogHeader>
             <DialogTitle>Identify {label}</DialogTitle>
-            <DialogDescription className="text-base">
+            <DialogDescription>
               This student&apos;s name is not known in this browser. Type it to
               show it on every submission of {label} in this class.
             </DialogDescription>
@@ -165,12 +165,7 @@ function IdentifyForm({
               <FormItem>
                 <FormLabel>Student name</FormLabel>
                 <FormControl>
-                  <Input
-                    list={listId}
-                    autoComplete="off"
-                    className="text-base"
-                    {...field}
-                  />
+                  <Input list={listId} autoComplete="off" {...field} />
                 </FormControl>
                 <datalist id={listId}>
                   {getClassStudentNames(names, classId).map((name) => (

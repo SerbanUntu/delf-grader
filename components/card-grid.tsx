@@ -102,25 +102,19 @@ function CardGridControls({
   return (
     <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
       <div className="grid gap-1.5">
-        <Label htmlFor={sortId} className="text-base">
-          Sort by
-        </Label>
+        <Label htmlFor={sortId}>Sort by</Label>
         <Select
           value={view.sortOrder}
           onValueChange={(sortOrder) =>
             changeView({ sortOrder: sortOrder as SortOrder })
           }
         >
-          <SelectTrigger id={sortId} className="h-10 w-48 bg-card text-base">
+          <SelectTrigger id={sortId} className="h-10 w-48 bg-card">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {Object.entries(labels).map(([sortOrder, label]) => (
-              <SelectItem
-                key={sortOrder}
-                value={sortOrder}
-                className="text-base"
-              >
+              <SelectItem key={sortOrder} value={sortOrder}>
                 {label}
               </SelectItem>
             ))}
@@ -144,7 +138,7 @@ function CardGridControls({
         {isScoreFilterSet(view) && (
           <Button
             variant="ghost"
-            className="h-10 text-base"
+            className="h-10"
             onClick={() => changeView({ minScore: null, maxScore: null })}
           >
             Clear filter
@@ -196,9 +190,7 @@ function ScoreInput({
 
   return (
     <div className="grid gap-1.5">
-      <Label htmlFor={id} className="text-base">
-        {label}
-      </Label>
+      <Label htmlFor={id}>{label}</Label>
       <Input
         id={id}
         inputMode="decimal"
@@ -214,7 +206,7 @@ function ScoreInput({
             onChange(score);
           }
         }}
-        className="h-10 w-28 bg-card text-base aria-invalid:border-destructive"
+        className="h-10 w-28 bg-card aria-invalid:border-destructive"
       />
       {isInvalid && (
         <span id={`${id}-error`} className="sr-only">

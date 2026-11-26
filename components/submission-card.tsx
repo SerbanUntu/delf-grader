@@ -56,7 +56,7 @@ export function SubmissionCard({
             <Badge
               variant="outline"
               className={cn(
-                "absolute top-3 left-3 text-sm shadow-sm",
+                "absolute top-3 left-3 shadow-sm",
                 badgeClassNames[submission.badge],
               )}
             >

@@ -94,12 +94,10 @@ export function NotesField({
   return (
     <div className="grid gap-2">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <Label htmlFor={fieldId} className="text-base font-semibold">
+        <Label htmlFor={fieldId} className="font-semibold">
           Notes
         </Label>
-        <span className="text-sm text-muted-foreground">
-          Saved automatically
-        </span>
+        <span className="text-muted-foreground">Saved automatically</span>
       </div>
       <Textarea
         id={fieldId}
@@ -108,9 +106,9 @@ export function NotesField({
         aria-describedby={hintId}
         onChange={(event) => change(event.target.value)}
         onBlur={() => void save()}
-        className="min-h-28 bg-card text-base leading-relaxed"
+        className="min-h-28 bg-card leading-relaxed"
       />
-      <p id={hintId} className="text-sm text-muted-foreground">
+      <p id={hintId} className="text-muted-foreground">
         {noStudentNamesHint}
       </p>
       <FormError message={error} />

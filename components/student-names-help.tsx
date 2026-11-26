@@ -47,10 +47,10 @@ export function StudentNamesHelp() {
         <QuestionMarkIcon className="size-5" />
       </Button>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+        <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>Import Student Names</DialogTitle>
-            <DialogDescription className="text-base">
+            <DialogDescription>
               Student names never leave the browser where they were entered. The
               server only receives an anonymous ID for each student, made from
               the name and a secret key kept in the browser. To show your

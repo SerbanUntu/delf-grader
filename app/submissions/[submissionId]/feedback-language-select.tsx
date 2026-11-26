@@ -40,13 +40,13 @@ export function FeedbackLanguageSelect({
       <SelectTrigger
         aria-label="Feedback language"
         title="Feedback language"
-        className="h-9 w-auto gap-2 text-base"
+        className="h-9 w-auto gap-2"
       >
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         {feedbackLanguages.map((language) => (
-          <SelectItem key={language} value={language} className="text-base">
+          <SelectItem key={language} value={language}>
             <span className="flex items-center gap-2">
               <LanguageFlag language={language} />
               {feedbackLanguageNames[language]}

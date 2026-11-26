@@ -42,7 +42,7 @@ export function StepList({
                 className={cn(
                   "flex w-full items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-left transition-colors",
                   "outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  "enabled:hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50",
+                  "enabled:hover:bg-muted disabled:cursor-not-allowed disabled:text-muted-foreground",
                   isOpen &&
                     "border-curry bg-curry-soft enabled:hover:bg-curry-soft",
                 )}
@@ -52,7 +52,7 @@ export function StepList({
                   <span className="block font-semibold">{step.label}</span>
                   <span
                     className={cn(
-                      "block text-sm text-muted-foreground",
+                      "block text-muted-foreground",
                       status === "failed" && "font-medium text-destructive",
                     )}
                   >

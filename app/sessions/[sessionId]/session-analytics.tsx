@@ -150,7 +150,7 @@ function ScoreChart({
         config={chartConfig}
         role="img"
         aria-label={`Submissions per score for ${criterion.frenchName}. ${description}.`}
-        className="mt-2 aspect-auto h-56 w-full text-sm"
+        className="mt-2 aspect-auto h-56 w-full"
       >
         <BarChart data={data} margin={{ top: 24, right: 8, left: 0 }}>
           <CartesianGrid vertical={false} />
@@ -171,7 +171,6 @@ function ScoreChart({
             content={
               <ChartTooltipContent
                 hideIndicator
-                className="text-sm"
                 labelFormatter={(_, payload) => {
                   const item = payload[0]?.payload;
                   return item
@@ -210,7 +209,7 @@ function LevelLegend({ criterion }: { criterion: Criterion }) {
   }
 
   return (
-    <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+    <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
       {groups.map((group) => (
         <div key={group.lowest} className="contents">
           <dt className="font-semibold tabular-nums">

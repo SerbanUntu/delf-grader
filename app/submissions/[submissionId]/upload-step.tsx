@@ -199,16 +199,16 @@ export function UploadStep({
       ) : (
         <>
           {isRedacted && (
-            <Alert className="text-base">
-              <AlertDescription className="text-base">
+            <Alert>
+              <AlertDescription>
                 The redacted images are saved. Choosing new files replaces them,
                 and the submission goes back to the redaction step.
               </AlertDescription>
             </Alert>
           )}
           {isUploaded && !isRedacted && localPages === null && (
-            <Alert className="text-base">
-              <AlertDescription className="text-base">
+            <Alert>
+              <AlertDescription>
                 {otherBrowserMessage} To continue on this browser, choose the
                 files again.
               </AlertDescription>

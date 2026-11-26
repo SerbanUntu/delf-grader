@@ -75,15 +75,12 @@ export function ItemActions({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            className="text-base"
-            onSelect={() => setIsRenaming(true)}
-          >
+          <DropdownMenuItem onSelect={() => setIsRenaming(true)}>
             Rename {itemType}
           </DropdownMenuItem>
           {menuItems}
           <DropdownMenuItem
-            className="text-base text-destructive focus:text-destructive"
+            className="text-destructive focus:text-destructive"
             onSelect={() => setIsDeleting(true)}
           >
             Delete {itemType}
@@ -247,10 +244,7 @@ export function SubmissionActions({
             ),
         }}
         menuItems={
-          <DropdownMenuItem
-            className="text-base"
-            onSelect={() => setIsChangingStudent(true)}
-          >
+          <DropdownMenuItem onSelect={() => setIsChangingStudent(true)}>
             Change student
           </DropdownMenuItem>
         }

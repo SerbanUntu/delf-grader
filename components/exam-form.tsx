@@ -110,7 +110,6 @@ export function ExamForm({
                       isIsoDate(examDate) ? examDate : undefined,
                     )}
                     autoComplete="off"
-                    className="text-base"
                     {...field}
                   />
                 </FormControl>
@@ -173,7 +172,7 @@ export function ExamDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>

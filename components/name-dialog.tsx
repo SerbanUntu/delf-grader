@@ -111,7 +111,6 @@ function NameForm({
                 <Input
                   placeholder={placeholder}
                   autoComplete="off"
-                  className="text-base"
                   {...field}
                 />
               </FormControl>

@@ -116,7 +116,7 @@ function TranscriptionEditor({
   return (
     <div className="grid gap-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <Label htmlFor={textAreaId} className="text-base font-semibold">
+        <Label htmlFor={textAreaId} className="font-semibold">
           Transcribed text
         </Label>
         <span className="text-muted-foreground">
@@ -130,7 +130,7 @@ function TranscriptionEditor({
         maxLength={maxTranscriptionLength}
         spellCheck={false}
         onChange={(event) => setDraft(event.target.value)}
-        className="min-h-[28rem] bg-card text-base leading-relaxed"
+        className="min-h-[28rem] bg-card leading-relaxed"
       />
       <FormError message={error} />
       <div className="flex flex-wrap gap-3">

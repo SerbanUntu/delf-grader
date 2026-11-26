@@ -37,7 +37,6 @@ export function StudentNameField({ classId }: { classId: string }) {
             <Input
               list={listId}
               autoComplete="off"
-              className="text-base"
               {...field}
               value={field.value ?? ""}
             />

@@ -106,12 +106,8 @@ export function SessionView({ sessionId }: { sessionId: string }) {
 
         <Tabs defaultValue="submissions" className="mt-8">
           <TabsList>
-            <TabsTrigger value="submissions" className="text-base">
-              Submissions
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="text-base">
-              Analytics
-            </TabsTrigger>
+            <TabsTrigger value="submissions">Submissions</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
           <TabsContent value="submissions" className="mt-6">
             <SectionTitle

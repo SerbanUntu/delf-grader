@@ -287,10 +287,8 @@ function Warning({ title, children }: { title: string; children: ReactNode }) {
   return (
     <Alert className="border-amber-400 bg-amber-50 text-foreground">
       <ExclamationTriangleIcon aria-hidden className="size-5 text-amber-700" />
-      <AlertTitle className="text-base font-semibold leading-snug">
-        {title}
-      </AlertTitle>
-      <AlertDescription className="text-base">{children}</AlertDescription>
+      <AlertTitle className="font-semibold leading-snug">{title}</AlertTitle>
+      <AlertDescription>{children}</AlertDescription>
     </Alert>
   );
 }
@@ -339,7 +337,7 @@ function CriterionView({
                 <p className="wrap-break-word">
                   {deduction.reason}
                   {deduction.isAutomatic && (
-                    <span className="ml-2 text-sm text-muted-foreground">
+                    <span className="ml-2 text-muted-foreground">
                       (automatic)
                     </span>
                   )}
@@ -351,7 +349,7 @@ function CriterionView({
                       return (
                         <li
                           key={category.id}
-                          className="rounded-md border px-2 py-0.5 text-sm"
+                          className="rounded-md border px-2 py-0.5"
                         >
                           <span className="font-medium">
                             {category.frenchName}

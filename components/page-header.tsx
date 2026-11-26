@@ -27,44 +27,42 @@ export function PageHeader({
   breadcrumbs: BreadcrumbEntry[];
 }) {
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur-sm">
-      <div className="container flex min-h-16 items-center justify-between gap-4 py-3">
-        <div className="flex min-w-0 items-center gap-4 sm:gap-6">
-          <Link
-            href="/"
-            className="flex shrink-0 items-center gap-2 font-semibold"
-          >
-            <span
-              aria-hidden
-              className="size-3 rounded-full bg-linear-to-br from-curry to-curry/70"
-            />
-            DELF Grader
-          </Link>
-          <Breadcrumb className="min-w-0">
-            <BreadcrumbList>
-              {breadcrumbs.map((entry, index) => {
-                const isLast = index === breadcrumbs.length - 1;
-                return (
-                  <Fragment key={entry.href ?? entry.label}>
-                    {index > 0 && <BreadcrumbSeparator />}
-                    <BreadcrumbItem className="min-w-0">
-                      {isLast || !entry.href ? (
-                        <BreadcrumbPage className="truncate">
-                          {entry.label}
-                        </BreadcrumbPage>
-                      ) : (
-                        <BreadcrumbLink asChild className="truncate">
-                          <Link href={entry.href}>{entry.label}</Link>
-                        </BreadcrumbLink>
-                      )}
-                    </BreadcrumbItem>
-                  </Fragment>
-                );
-              })}
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-        <div className="flex shrink-0 items-center gap-3">
+    <header className="top-0 z-40 border-b bg-background/85 backdrop-blur-sm sm:sticky">
+      <div className="container flex min-h-16 flex-wrap items-center gap-x-6 gap-y-2 py-3">
+        <Link
+          href="/"
+          className="flex shrink-0 items-center gap-2 font-semibold"
+        >
+          <span
+            aria-hidden
+            className="size-3 rounded-full bg-linear-to-br from-curry to-curry/70"
+          />
+          DELF Grader
+        </Link>
+        <Breadcrumb className="order-last w-full min-w-0 sm:order-none sm:w-auto sm:flex-1 sm:basis-0">
+          <BreadcrumbList>
+            {breadcrumbs.map((entry, index) => {
+              const isLast = index === breadcrumbs.length - 1;
+              return (
+                <Fragment key={entry.href ?? entry.label}>
+                  {index > 0 && <BreadcrumbSeparator />}
+                  <BreadcrumbItem className="max-w-[calc(100%-1.5rem)] min-w-0">
+                    {isLast || !entry.href ? (
+                      <BreadcrumbPage className="truncate">
+                        {entry.label}
+                      </BreadcrumbPage>
+                    ) : (
+                      <BreadcrumbLink asChild className="truncate">
+                        <Link href={entry.href}>{entry.label}</Link>
+                      </BreadcrumbLink>
+                    )}
+                  </BreadcrumbItem>
+                </Fragment>
+              );
+            })}
+          </BreadcrumbList>
+        </Breadcrumb>
+        <div className="ml-auto flex shrink-0 items-center gap-3">
           <StudentNamesHelp />
           <UserMenu />
         </div>

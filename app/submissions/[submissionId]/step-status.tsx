@@ -57,8 +57,8 @@ export function StepFailed({
   return (
     <div className="grid gap-3">
       <Alert variant="destructive" role="alert">
-        <AlertTitle className="text-base font-semibold">Failed</AlertTitle>
-        <AlertDescription className="text-base">{error}</AlertDescription>
+        <AlertTitle className="font-semibold">Failed</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
       </Alert>
       <FormError message={retryError} />
       <div>

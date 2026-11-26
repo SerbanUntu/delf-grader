@@ -63,17 +63,13 @@ export function ExamFields() {
             <FormLabel>Rubric</FormLabel>
             <Select value={field.value} onValueChange={field.onChange}>
               <FormControl>
-                <SelectTrigger className="text-base">
+                <SelectTrigger>
                   <SelectValue placeholder="Choose a rubric" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
                 {rubrics.map((rubric) => (
-                  <SelectItem
-                    key={rubric.id}
-                    value={rubric.id}
-                    className="text-base"
-                  >
+                  <SelectItem key={rubric.id} value={rubric.id}>
                     {rubric.name}
                   </SelectItem>
                 ))}
@@ -93,7 +89,7 @@ export function ExamFields() {
               <Textarea
                 rows={6}
                 placeholder="Paste the exam question here"
-                className="max-h-80 text-base"
+                className="max-h-80"
                 {...field}
               />
             </FormControl>
@@ -121,7 +117,7 @@ function ExamDatePicker({
         <FormControl>
           <Button
             variant="outline"
-            className="w-full justify-between text-base font-normal sm:w-56"
+            className="w-full justify-between font-normal sm:w-56"
           >
             {selected ? formatDate(selected) : examDatePlaceholder}
             <CalendarIcon aria-hidden className="size-4 opacity-60" />

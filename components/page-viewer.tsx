@@ -159,7 +159,7 @@ export function EmptyPageViewer({ children }: { children: ReactNode }) {
  */
 export function LocalPagesBadge() {
   return (
-    <Badge variant="outline" className="border-curry bg-curry-soft text-sm">
+    <Badge variant="outline" className="border-curry bg-curry-soft">
       Not saved
     </Badge>
   );

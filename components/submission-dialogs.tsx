@@ -56,7 +56,7 @@ export function NewSubmissionDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <DialogContent>
         <NewSubmissionForm
           classId={classId}
           onCreate={onCreate}
@@ -111,7 +111,6 @@ function NewSubmissionForm({
                 <Input
                   placeholder={defaultSubmissionName}
                   autoComplete="off"
-                  className="text-base"
                   {...field}
                 />
               </FormControl>
@@ -197,7 +196,7 @@ function StudentForm({
       >
         <DialogHeader>
           <DialogTitle>Change student</DialogTitle>
-          <DialogDescription className="text-base">
+          <DialogDescription>
             Type the name of the student who wrote this submission. Leave it
             empty to remove the student from this submission.
           </DialogDescription>

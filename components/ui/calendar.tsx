@@ -35,7 +35,7 @@ function Calendar({
         months: "relative flex flex-col sm:flex-row gap-4",
         month: "flex flex-col gap-4",
         month_caption: "flex justify-center pt-1 items-center h-7",
-        caption_label: "text-sm font-medium",
+        caption_label: "text-base font-medium",
         nav: "absolute inset-x-0 top-0 flex items-center justify-between",
         button_previous: cn(
           buttonVariants({ variant: "outline" }),
@@ -48,10 +48,10 @@ function Calendar({
         month_grid: "w-full border-collapse",
         weekdays: "flex",
         weekday:
-          "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]",
+          "text-muted-foreground rounded-md w-8 font-normal text-base",
         week: "flex w-full mt-2",
         day: cn(
-          "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 has-aria-selected:bg-accent",
+          "relative p-0 text-center text-base focus-within:relative focus-within:z-20 has-aria-selected:bg-accent",
           props.mode === "range"
             ? "first:has-aria-selected:rounded-l-md last:has-aria-selected:rounded-r-md"
             : "has-aria-selected:rounded-md",

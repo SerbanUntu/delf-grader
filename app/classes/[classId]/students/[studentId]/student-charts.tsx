@@ -36,7 +36,6 @@ function ValueTooltip({
       cursor={false}
       content={
         <ChartTooltipContent
-          className="text-sm"
           formatter={(value, name, item) => (
             <div className="flex w-full items-center gap-2">
               <span
@@ -88,7 +87,7 @@ export function ScoreChart({
       config={scoreChartConfig}
       role="img"
       aria-label={`Total score out of ${maxTotalScore} over time. ${description}.`}
-      className="aspect-auto h-72 w-full text-sm"
+      className="aspect-auto h-72 w-full"
     >
       <LineChart data={data} margin={{ top: 16, right: 16, left: 0 }}>
         <CartesianGrid vertical={false} />
@@ -109,9 +108,7 @@ export function ScoreChart({
           config={scoreChartConfig}
           formatValue={(value) => `${formatNumber(value)}/${maxTotalScore}`}
         />
-        {hasSessionMedian && (
-          <ChartLegend content={<ChartLegendContent className="text-sm" />} />
-        )}
+        {hasSessionMedian && <ChartLegend content={<ChartLegendContent />} />}
         {hasSessionMedian && (
           <Line
             dataKey="sessionMedian"
@@ -161,7 +158,7 @@ export function PercentChart({
       config={percentChartConfig}
       role="img"
       aria-label={`Points kept in ${criterionName} over time. ${description}.`}
-      className="mt-4 aspect-auto h-48 w-full text-sm"
+      className="mt-4 aspect-auto h-48 w-full"
     >
       <LineChart data={data} margin={{ top: 16, right: 16, left: 0 }}>
         <CartesianGrid vertical={false} />
@@ -177,7 +174,7 @@ export function PercentChart({
           tickFormatter={(value: number) => formatPercent(value)}
           tickLine={false}
           axisLine={false}
-          width={44}
+          width={56}
         />
         <ValueTooltip config={percentChartConfig} formatValue={formatPercent} />
         <Line

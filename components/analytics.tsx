@@ -38,7 +38,7 @@ export function Stat({
 }) {
   return (
     <div className="rounded-lg bg-muted px-3 py-2">
-      <dt className="text-sm text-muted-foreground">{term}</dt>
+      <dt className="text-muted-foreground">{term}</dt>
       <dd className="font-semibold tabular-nums">{children}</dd>
     </div>
   );
@@ -130,7 +130,7 @@ export function MissingCriterionNote({
     return null;
   }
   return (
-    <p className="mt-3 text-sm text-muted-foreground">
+    <p className="mt-3 text-muted-foreground">
       Based on {examCount} of {pluralizeSubmissions(totalCount)}. The rubric of
       the others has no criterion for it.
     </p>

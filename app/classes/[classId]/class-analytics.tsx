@@ -73,9 +73,7 @@ function SessionCountInput({
 
   return (
     <div className="flex items-center gap-2">
-      <Label htmlFor={id} className="text-base">
-        Covered sessions (newest)
-      </Label>
+      <Label htmlFor={id}>Covered sessions (newest)</Label>
       <Input
         id={id}
         type="number"
@@ -95,7 +93,7 @@ function SessionCountInput({
           onChange(count);
         }}
         onBlur={() => setText(String(value))}
-        className="h-10 w-20 bg-card text-base"
+        className="h-10 w-20 bg-card"
       />
     </div>
   );
