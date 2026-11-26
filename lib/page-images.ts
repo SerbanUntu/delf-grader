@@ -1,3 +1,4 @@
+import type { PDFDocumentLoadingTask, PDFDocumentProxy } from "pdfjs-dist";
 import { formatNumber, maxPageCount, maxUploadSize } from "./format";
 
 const maxPageSide = 2400;
@@ -58,85 +59,108 @@ async function checkImage(file: File) {
   }
 }
 
-async function readPdf(file: File): Promise<Blob[]> {
+async function openPdf(file: File): Promise<PDFDocumentLoadingTask> {
   const pdfjs = await import("pdfjs-dist");
   pdfjs.GlobalWorkerOptions.workerSrc = new URL(
     "pdfjs-dist/build/pdf.worker.min.mjs",
     import.meta.url,
   ).toString();
-
   const loadingTask = pdfjs.getDocument({ data: await file.arrayBuffer() });
   try {
-    const pdf = await loadingTask.promise.catch(() => {
-      throw new PageError(`"${file.name}" could not be read as a PDF.`);
-    });
-    if (pdf.numPages > maxPageCount) {
-      throw new PageError(
-        `The PDF has ${pdf.numPages} pages, but a submission can have at most ${maxPageCount}.`,
-      );
-    }
-    const pages: Blob[] = [];
-    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-      const page = await pdf.getPage(pageNumber);
-      const size = page.getViewport({ scale: 1 });
-      const viewport = page.getViewport({
-        scale: maxPageSide / Math.max(size.width, size.height),
-      });
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.round(viewport.width);
-      canvas.height = Math.round(viewport.height);
-      await page.render({ canvas, viewport }).promise;
-      pages.push(await canvasToBlob(canvas, "image/png"));
-      page.cleanup();
-    }
-    return pages;
-  } finally {
+    await loadingTask.promise;
+  } catch {
     await loadingTask.destroy();
+    throw new PageError(`"${file.name}" could not be read as a PDF.`);
   }
+  return loadingTask;
+}
+
+async function renderPdf(pdf: PDFDocumentProxy): Promise<Blob[]> {
+  const pages: Blob[] = [];
+  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+    const page = await pdf.getPage(pageNumber);
+    const size = page.getViewport({ scale: 1 });
+    const viewport = page.getViewport({
+      scale: maxPageSide / Math.max(size.width, size.height),
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(viewport.width);
+    canvas.height = Math.round(viewport.height);
+    await page.render({ canvas, viewport }).promise;
+    pages.push(await canvasToBlob(canvas, "image/jpeg", jpegQuality));
+    page.cleanup();
+  }
+  return pages;
 }
 
 /**
- * Reads the files picked by the teacher as the pages of a submission, turning PDF pages into images.
+ * Reads the files picked by the teacher as new pages of a submission, turning each page of a PDF into an image.
  *
- * @param files One or more images, or one PDF.
- * @returns The page images in order. Images are sorted by file name.
- * @throws A PageError if the files cannot be used, for example when there are too many pages.
+ * @param files Images and PDFs, in any mix.
+ * @param currentPages The pages the submission already has, which count towards the limits.
+ * @returns The new page images in order. Files are sorted by name, and the pages of a PDF take its place.
+ * @throws A PageError if the files cannot be used, for example when there would be too many pages.
  */
-export async function readPageFiles(files: File[]): Promise<Blob[]> {
+export async function readPageFiles(
+  files: File[],
+  currentPages: Blob[] = [],
+): Promise<Blob[]> {
   if (files.length === 0) {
     throw new PageError("Pick at least one file.");
   }
-  const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+  const totalSize = [...currentPages, ...files].reduce(
+    (sum, file) => sum + file.size,
+    0,
+  );
   if (totalSize > maxUploadSize) {
     throw new PageError(
-      `The files take up ${formatNumber(totalSize / 1024 / 1024, 1)} MB, but a submission can take up at most ${maxUploadSize / 1024 / 1024} MB.`,
+      `The pages would take up ${formatNumber(totalSize / 1024 / 1024, 1)} MB, but a submission can take up at most ${maxUploadSize / 1024 / 1024} MB.`,
     );
   }
-
-  const pdfs = files.filter((file) => file.type === pdfType);
-  if (pdfs.length > 0) {
-    if (files.length > 1) {
-      throw new PageError("Pick either one PDF, or one or more images.");
-    }
-    return await readPdf(files[0]);
-  }
-
-  const unsupported = files.find((file) => !imageTypes.includes(file.type));
+  const unsupported = files.find(
+    (file) => file.type !== pdfType && !imageTypes.includes(file.type),
+  );
   if (unsupported) {
     throw new PageError(
-      `"${unsupported.name}" is not supported. Pick JPEG, PNG or WebP images, or one PDF.`,
+      `"${unsupported.name}" is not supported. Pick JPEG, PNG or WebP images, or PDFs.`,
     );
   }
-  if (files.length > maxPageCount) {
-    throw new PageError(
-      `You picked ${files.length} images, but a submission can have at most ${maxPageCount} pages.`,
-    );
-  }
+
   const sorted = sortByName(files);
-  for (const file of sorted) {
-    await checkImage(file);
+  const pdfs = new Map<File, PDFDocumentLoadingTask>();
+  try {
+    let pageCount = currentPages.length;
+    for (const file of sorted) {
+      if (file.type === pdfType) {
+        const loadingTask = await openPdf(file);
+        pdfs.set(file, loadingTask);
+        pageCount += (await loadingTask.promise).numPages;
+      } else {
+        await checkImage(file);
+        pageCount += 1;
+      }
+    }
+    if (pageCount > maxPageCount) {
+      throw new PageError(
+        `The submission would have ${pageCount} pages, but it can have at most ${maxPageCount}.`,
+      );
+    }
+
+    const pages: Blob[] = [];
+    for (const file of sorted) {
+      const loadingTask = pdfs.get(file);
+      if (loadingTask) {
+        pages.push(...(await renderPdf(await loadingTask.promise)));
+      } else {
+        pages.push(file);
+      }
+    }
+    return pages;
+  } finally {
+    for (const loadingTask of pdfs.values()) {
+      await loadingTask.destroy();
+    }
   }
-  return sorted;
 }
 
 /**

@@ -125,6 +125,24 @@ export function useLocalPages(
 }
 
 /**
+ * Creates a URL to show one page image, which stays valid while the component is shown.
+ *
+ * @param blob The page image.
+ * @returns The URL, or undefined while it is created.
+ */
+export function useBlobUrl(blob: Blob): string | undefined {
+  const [created, setCreated] = useState<{ blob: Blob; url: string }>();
+
+  useEffect(() => {
+    const url = URL.createObjectURL(blob);
+    setCreated({ blob, url });
+    return () => URL.revokeObjectURL(url);
+  }, [blob]);
+
+  return created?.blob === blob ? created.url : undefined;
+}
+
+/**
  * Creates URLs to show page images, which stay valid while the component is shown.
  *
  * @param blobs The page images, null or undefined.
