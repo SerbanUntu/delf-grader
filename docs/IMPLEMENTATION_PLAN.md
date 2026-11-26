@@ -167,10 +167,9 @@ A submission goes through four steps:
 
 - The grading screen has a "Copy feedback" button, which copies the feedback as plain text suited to pasting into a messaging app such as WhatsApp, and a "Download PDF" button, which downloads it as a PDF made in the browser with a PDF library.
 - The feedback is read by students, so its fixed labels (for example "Note totale") are in French. Everything else appears exactly as in the app, with no translation: criterion, anomaly and category names in French, and reasons and overviews in English.
-- It contains the student name and exam date (when known), the rubric name, the total score out of 25, the anomalies, the overview of the paper and, for each criterion, its name, score out of its maximum, level label, overview and deductions (points removed, the reason and the categories).
-- Notes, the transcription and the images are not exported, and there is no export of a whole session.
-- The student name is only included when it is known in the current browser. Placeholders such as "Student #a3f9" never appear in the feedback or its file name.
-- The PDF file is named "<submission name> - <student name> - 31-12-1999.pdf" (with the exam date), leaving out the student name when it is not known. Characters that are not allowed in file names are removed.
+- It contains the submission name as its title, the exam date, the total score out of 25, the anomalies, the overview of the paper and, for each criterion, its name, score out of its maximum, level label, overview and deductions (points removed, the reason and the categories).
+- Notes, the transcription, the images, the student name and the rubric name are not exported, and there is no export of a whole session.
+- The PDF file is named "<submission name> - <student name> - 31-12-1999.pdf" (with the exam date), so the teacher can tell the files apart. The student name is only used in the file name, and is left out when it is not known in the current browser. Placeholders such as "Student #a3f9" never appear. Characters that are not allowed in file names are removed.
 
 ## Rubrics and grading
 
@@ -344,7 +343,7 @@ The work is tracked as GitHub issues, done in this order. Each issue only depend
 - #29: Exports the feedback for students, copied as plain text or downloaded as a PDF.
 - #25: Stores everything kept in the browser under the signed-in user's ID.
 - #30: Adds exporting and importing student names as a file, and the "Import Student Names" help dialog.
-- #21: Adds the analytics criteria and mistake categories on deductions, shown on the grading screen, in the export and in session analytics.
+- #21: Adds the analytics criteria and mistake categories on deductions, shown on the grading screen, in the export and in session analytics. The copied text and the PDF from #29 must keep working.
 - #19: Shows analytics for one student across several exams, based on the anonymous student ID.
 - #35: Adds the "Analytics" section of the class page, covering its newest sessions and recent individual submissions through the analytics criteria.
 - #22: Lets the teacher resize the side-by-side screens and switch between a horizontal and a vertical layout.

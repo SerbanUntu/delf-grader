@@ -146,6 +146,9 @@ export function SubmissionView({ submissionId }: { submissionId: string }) {
                       : null
                   }
                   notes={submission.notes ?? ""}
+                  submissionName={submission.name}
+                  studentId={submission.studentId}
+                  examDate={exam.examDate}
                 />
               </SideBySide>
             )}

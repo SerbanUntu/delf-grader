@@ -19,6 +19,7 @@ import {
   getRubric,
   type Rubric,
 } from "@/lib/rubrics";
+import { FeedbackActions } from "./feedback-actions";
 import { NotesField } from "./notes-field";
 import { StepHeading } from "./step-heading";
 import { StepFailed, StepInProgress } from "./step-status";
@@ -30,17 +31,26 @@ import { StepFailed, StepInProgress } from "./step-status";
  * @param grading The grading of the submission, or undefined if it has not started.
  * @param wordCount The number of words in the transcription, or null if the transcription is not done.
  * @param notes The teacher's notes on the submission.
+ * @param submissionName The name of the submission, used in the exported feedback.
+ * @param studentId The student ID, or undefined when the submission has no student.
+ * @param examDate The stored exam date.
  */
 export function GradingStep({
   submissionId,
   grading,
   wordCount,
   notes,
+  submissionName,
+  studentId,
+  examDate,
 }: {
   submissionId: Id<"submissions">;
   grading: Doc<"submissions">["grading"];
   wordCount: number | null;
   notes: string;
+  submissionName: string;
+  studentId: string | undefined;
+  examDate: string;
 }) {
   const regrade = useMutation(api.grading.regrade);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -60,9 +70,18 @@ export function GradingStep({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <StepHeading title="Grading" />
         {grading?.status === "done" && (
-          <Button variant="outline" onClick={() => setIsConfirming(true)}>
-            Re-grade
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={() => setIsConfirming(true)}>
+              Re-grade
+            </Button>
+            <FeedbackActions
+              result={grading.result}
+              submissionName={submissionName}
+              studentId={studentId}
+              examDate={examDate}
+              onError={setError}
+            />
+          </div>
         )}
       </div>
       <FormError message={error} />
