@@ -1,28 +1,32 @@
 "use client";
 
 import { UserButton } from "@clerk/nextjs";
-import { LockClosedIcon } from "@radix-ui/react-icons";
-import { useState } from "react";
-import { StudentKeyDialog } from "@/components/student-key-dialog";
+import { DownloadIcon, UploadIcon } from "@radix-ui/react-icons";
+import { useStudentNamesFile } from "@/components/student-names-file";
 
 /**
- * The user menu, with the account settings, signing out and the student key.
+ * The user menu, with the account settings, signing out and exporting or importing student names.
  */
 export function UserMenu() {
-  const [isShowingKey, setIsShowingKey] = useState(false);
+  const { exportNames, pickFile, dialogs } = useStudentNamesFile();
 
   return (
     <>
       <UserButton>
         <UserButton.MenuItems>
           <UserButton.Action
-            label="Student key"
-            labelIcon={<LockClosedIcon />}
-            onClick={() => setIsShowingKey(true)}
+            label="Export student names"
+            labelIcon={<DownloadIcon />}
+            onClick={exportNames}
+          />
+          <UserButton.Action
+            label="Import student names"
+            labelIcon={<UploadIcon />}
+            onClick={pickFile}
           />
         </UserButton.MenuItems>
       </UserButton>
-      <StudentKeyDialog open={isShowingKey} onOpenChange={setIsShowingKey} />
+      {dialogs}
     </>
   );
 }

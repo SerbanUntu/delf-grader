@@ -1,5 +1,4 @@
-import { useConvex, useMutation, useQuery } from "convex/react";
-import { ConvexError } from "convex/values";
+import { useMutation, useQuery } from "convex/react";
 import { useSyncExternalStore } from "react";
 import { z } from "zod";
 import { api } from "@/convex/_generated/api";
@@ -20,12 +19,14 @@ import {
 const keyStorageName = "student-key";
 const namesStorageName = "student-names";
 
-const studentNamesSchema = z.record(
+export const studentNamesSchema = z.record(
   z.string(),
   z.object({ classId: z.string(), name: z.string() }),
 );
 
 export type StudentNames = z.infer<typeof studentNamesSchema>;
+
+export type StudentNamesData = { key: string | null; names: StudentNames };
 
 const emptyNames: StudentNames = {};
 let cachedNames: { text: string | null; names: StudentNames } = {
@@ -89,7 +90,27 @@ export function useStudentName(
 }
 
 /**
- * Builds the text shown for a submission's student: their name, or "Student #abcd" (with is id) when it is not known in this browser.
+ * Lists the names entered in this browser for the students of one class, without duplicates and sorted from A to Z.
+ *
+ * @param names The students entered in this browser.
+ * @param classId The ID of the class.
+ * @returns The names.
+ */
+export function getClassStudentNames(
+  names: StudentNames,
+  classId: string,
+): string[] {
+  return [
+    ...new Set(
+      Object.values(names)
+        .filter((student) => student.classId === classId)
+        .map((student) => student.name),
+    ),
+  ].sort((first, second) => first.localeCompare(second));
+}
+
+/**
+ * Builds the text shown for a submission's student: their name, or "Student #abcd" (with its id) when it is not known in this browser.
  *
  * @param names The students entered in this browser.
  * @param studentId The student ID, or undefined when the submission has no student.
@@ -106,9 +127,9 @@ export function getStudentLabel(
 }
 
 /**
- * Remembers the name of a student in this browser.
+ * Remembers the name of a student in this browser, replacing the name saved for that student ID if there is one.
  *
- * @param studentId The student ID computed from the name.
+ * @param studentId The student ID, computed from the name or picked by the teacher when identifying a student.
  * @param classId The ID of the student's class.
  * @param name The student name.
  */
@@ -127,43 +148,42 @@ export function saveStudentName(
 }
 
 /**
- * Gives access to the secret student key: whether this browser needs it, and how to create, import or use it.
+ * Reads the secret student key and the names of all students entered in this browser, as they are exported to a file.
  *
- * @returns The key of this browser (null if it has none), whether the teacher has created or imported a key in any browser (undefined while loading), whether this browser must import the key before student names can be entered, and functions to create a key, import a key and compute student IDs.
+ * @returns The key (null if this browser has none) and the students, by student ID.
+ */
+export function readStudentNamesData(): StudentNamesData {
+  return { key: readKey(), names: readNames() };
+}
+
+/**
+ * Gives access to the secret student key: whether the teacher already has one, and how to import student names or compute student IDs.
+ *
+ * @returns The key of this browser (null if it has none), whether the teacher has created or imported a key in any browser (undefined while loading), and functions to import student names and compute student IDs.
  */
 export function useStudentKeys() {
-  const convex = useConvex();
   const key = useStudentKey();
   const hasAnyKey = useQuery(api.studentKeys.hasAny);
   const addKey = useMutation(api.studentKeys.add);
 
-  async function createKey(): Promise<string> {
-    const newKey = createStudentKey();
+  async function saveKey(newKey: string) {
     await addKey({ fingerprint: await getKeyFingerprint(newKey) });
     writeStorageItem(keyStorageName, newKey);
-    return newKey;
   }
 
-  async function importKey(text: string) {
-    const pastedKey = parseStudentKey(text);
-    if (!pastedKey) {
-      throw new ConvexError(
-        "This is not a valid student key. Copy the whole key and try again.",
-      );
+  async function importStudentNames(data: StudentNamesData): Promise<number> {
+    if (data.key) {
+      await saveKey(data.key);
     }
-    const fingerprint = await getKeyFingerprint(pastedKey);
-    const isKnown = await convex.query(api.studentKeys.isKnown, {
-      fingerprint,
-    });
-    if (!isKnown) {
-      if (await convex.query(api.studentKeys.hasAny, {})) {
-        throw new ConvexError(
-          "This key is not one of your student keys. Copy it again from a browser where your student names are shown.",
-        );
-      }
-      await addKey({ fingerprint });
-    }
-    writeStorageItem(keyStorageName, pastedKey);
+    const currentNames = readNames();
+    const addedCount = Object.keys(data.names).filter(
+      (studentId) => !(studentId in currentNames),
+    ).length;
+    writeStorageItem(
+      namesStorageName,
+      JSON.stringify({ ...data.names, ...currentNames }),
+    );
+    return addedCount;
   }
 
   async function toStudentId(
@@ -176,24 +196,13 @@ export function useStudentKeys() {
     }
     let currentKey = readKey();
     if (!currentKey) {
-      if (await convex.query(api.studentKeys.hasAny, {})) {
-        throw new ConvexError(
-          "Import your student key from the user menu before entering student names.",
-        );
-      }
-      currentKey = await createKey();
+      currentKey = createStudentKey();
+      await saveKey(currentKey);
     }
     const studentId = await getStudentId(currentKey, classId, cleanedName);
     saveStudentName(studentId, classId, cleanedName);
     return studentId;
   }
 
-  return {
-    key,
-    hasAnyKey,
-    needsImport: !key && hasAnyKey === true,
-    createKey,
-    importKey,
-    toStudentId,
-  };
+  return { key, hasAnyKey, importStudentNames, toStudentId };
 }

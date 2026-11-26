@@ -14,6 +14,19 @@ setup("sign in as the test user", async ({ page }) => {
   await clerk.signIn({ page, emailAddress });
   await page.goto("/");
   await page.waitForURL((url) => url.pathname === "/");
+  const userId = await page
+    .waitForFunction(
+      () =>
+        (window as unknown as { Clerk?: { user?: { id: string } } }).Clerk?.user
+          ?.id,
+    )
+    .then((handle) => handle.jsonValue());
+  await page.evaluate((id) => {
+    localStorage.setItem(
+      `delf-grader:user:${id}:student-names-help-shown`,
+      "true",
+    );
+  }, userId);
 
   await page.context().storageState({ path: signedInStateFile });
 });

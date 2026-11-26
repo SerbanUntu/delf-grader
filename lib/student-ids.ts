@@ -75,9 +75,9 @@ export function createStudentKey(): string {
 }
 
 /**
- * Reads a student key pasted by the teacher.
+ * Reads a student key, such as one from an imported file.
  *
- * @param text The pasted text, which may contain spaces or line breaks.
+ * @param text The text, which may contain spaces or line breaks.
  * @returns The key, or null if the text is not a valid key.
  */
 export function parseStudentKey(text: string): string | null {
@@ -102,7 +102,7 @@ export function getStudentId(
 }
 
 /**
- * Computes a value that identifies a student key without revealing it, so the server can tell whether a pasted key is one of the teacher's keys.
+ * Computes a value that identifies a student key without revealing it, so the server can tell whether the teacher already has a key.
  *
  * @param key The secret student key.
  * @returns The fingerprint, as 64 hexadecimal characters.

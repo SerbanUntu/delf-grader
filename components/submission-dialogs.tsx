@@ -27,7 +27,6 @@ import { Input } from "@/components/ui/input";
 import { getErrorMessage } from "@/lib/errors";
 import { defaultSubmissionName, noStudentNamesHint } from "@/lib/format";
 import { optionalNameSchema } from "@/lib/schemas";
-import { useStudentKeys } from "@/lib/students";
 
 const newSubmissionSchema = z.object({
   studentName: optionalNameSchema,
@@ -175,7 +174,6 @@ function StudentForm({
   onSave: (studentName: string) => Promise<unknown>;
   onDone: () => void;
 }) {
-  const { needsImport } = useStudentKeys();
   const form = useForm({
     resolver: zodResolver(studentSchema),
     defaultValues: { studentName: "" },
@@ -207,10 +205,7 @@ function StudentForm({
         <StudentNameField classId={classId} />
         <FormError message={form.formState.errors.root?.message} />
         <DialogFooter>
-          <Button
-            type="submit"
-            disabled={needsImport || form.formState.isSubmitting}
-          >
+          <Button type="submit" disabled={form.formState.isSubmitting}>
             Save
           </Button>
         </DialogFooter>

@@ -1,10 +1,10 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { StudentKeyNeeded } from "@/components/student-name-field";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,6 +17,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,7 +26,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { requiredNameSchema } from "@/lib/schemas";
 import { getStudentId, unknownStudentLabel } from "@/lib/student-ids";
-import { saveStudentName, useStudentKey, useStudentName } from "@/lib/students";
+import {
+  getClassStudentNames,
+  saveStudentName,
+  useStudentKey,
+  useStudentName,
+  useStudentNames,
+} from "@/lib/students";
 
 /**
  * The name of a submission's student, as entered in this browser. An unknown student is shown as "Student #abcd" (with its id), with a button to type their name.
@@ -87,73 +94,108 @@ function IdentifyForm({
   onDone: () => void;
 }) {
   const key = useStudentKey();
+  const names = useStudentNames();
+  const listId = useId();
+  const [unmatchedName, setUnmatchedName] = useState<string>();
   const form = useForm({
     resolver: zodResolver(z.object({ name: requiredNameSchema })),
     defaultValues: { name: "" },
   });
+  const label = unknownStudentLabel(studentId);
 
-  async function handleSubmit(values: { name: string }) {
-    if (!key) {
-      return;
-    }
-    if ((await getStudentId(key, classId, values.name)) !== studentId) {
-      form.setError("name", {
-        message:
-          "This name does not match the student of this submission. Check the spelling, and that this browser uses the same student key as the browser where the name was entered.",
-      });
-      return;
-    }
-    saveStudentName(studentId, classId, values.name);
+  function save(name: string) {
+    saveStudentName(studentId, classId, name);
     onDone();
   }
 
-  const header = (
-    <DialogHeader>
-      <DialogTitle>Identify {unknownStudentLabel(studentId)}</DialogTitle>
-      <DialogDescription className="text-base">
-        This student&apos;s name was entered in another browser. Type it to show
-        it here. It is checked against the student&apos;s anonymous ID, so a
-        misspelled name cannot be attached to the wrong student.
-      </DialogDescription>
-    </DialogHeader>
-  );
-
-  if (!key) {
-    return (
-      <div className="grid gap-5">
-        {header}
-        <StudentKeyNeeded />
-      </div>
-    );
+  async function handleSubmit(values: { name: string }) {
+    if (key && (await getStudentId(key, classId, values.name)) === studentId) {
+      save(values.name);
+      return;
+    }
+    setUnmatchedName(values.name);
   }
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="grid gap-5"
-        noValidate
-      >
-        {header}
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Student name</FormLabel>
-              <FormControl>
-                <Input autoComplete="off" className="text-base" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <DialogFooter>
-          <Button type="submit" disabled={form.formState.isSubmitting}>
-            Identify
-          </Button>
-        </DialogFooter>
-      </form>
-    </Form>
+    <>
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(handleSubmit)}
+          className="grid gap-5"
+          noValidate
+        >
+          <DialogHeader>
+            <DialogTitle>Identify {label}</DialogTitle>
+            <DialogDescription className="text-base">
+              This student&apos;s name is not known in this browser. Type it to
+              show it on every submission of {label} in this class.
+            </DialogDescription>
+          </DialogHeader>
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Student name</FormLabel>
+                <FormControl>
+                  <Input
+                    list={listId}
+                    autoComplete="off"
+                    className="text-base"
+                    {...field}
+                  />
+                </FormControl>
+                <datalist id={listId}>
+                  {getClassStudentNames(names, classId).map((name) => (
+                    <option key={name} value={name} />
+                  ))}
+                </datalist>
+                <FormDescription>
+                  Only kept in this browser. The name is checked against the
+                  anonymous ID with this browser&apos;s student key.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <DialogFooter>
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              Identify
+            </Button>
+          </DialogFooter>
+        </form>
+      </Form>
+      <ConfirmDialog
+        open={unmatchedName !== undefined}
+        onOpenChange={(open) => {
+          if (!open) {
+            setUnmatchedName(undefined);
+          }
+        }}
+        title={`Save "${unmatchedName ?? ""}" for ${label}?`}
+        description={
+          <div className="grid gap-3">
+            <p>
+              {key
+                ? `This name does not give the anonymous ID of ${label} with the student key of this browser.`
+                : "This browser has no student key yet, so the name cannot be checked against the anonymous ID."}{" "}
+              Either the name was entered with another key, for example in a
+              browser you no longer have, or it has a typo.
+            </p>
+            <p>
+              If you are sure this is the right student, save the name anyway.
+              Every submission of {label} in this class will then show it in
+              this browser.
+            </p>
+          </div>
+        }
+        confirmLabel="Save anyway"
+        onConfirm={() => {
+          if (unmatchedName !== undefined) {
+            save(unmatchedName);
+          }
+        }}
+      />
+    </>
   );
 }

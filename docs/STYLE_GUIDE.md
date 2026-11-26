@@ -22,3 +22,4 @@
 - Do not update `AGENTS.md`, `CLAUDE.md` and `docs/*` unless explicitly asked. When updating them, keep the changes as small as possible, to not overwhelm the context of agents.
 - Prefer technical names over domain names when they have a very clear technical meaning that makes onboarding on the codebase easier (e.g., user instead of teacher, ISO date instead of stored exam date).
 - When testing functionality of the app, avoid expensive, long-running calls to the AI APIs (Gemini and Anthropic) because budget is very limited.
+- When installing a new package, first check what the latest version older than 24h is, and install that. Don't rely on versions from memory, as they are likely outdated and vulnerable.

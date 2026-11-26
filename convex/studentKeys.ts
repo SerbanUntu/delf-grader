@@ -22,17 +22,6 @@ export const hasAny = query({
   },
 });
 
-export const isKnown = query({
-  args: { fingerprint: v.string() },
-  handler: async (ctx, args) => {
-    const teacherId = await getTeacherId(ctx);
-    return (
-      teacherId !== null &&
-      (await findKey(ctx, teacherId, args.fingerprint)) !== null
-    );
-  },
-});
-
 export const add = mutation({
   args: { fingerprint: v.string() },
   handler: async (ctx, args) => {

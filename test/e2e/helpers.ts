@@ -9,11 +9,13 @@ export const hiddenArea = { x: 100, y: 100, width: 300, height: 100 };
  *
  * @param page The browser page.
  * @param className The name of the new class.
+ * @param studentName The student name entered for the submission, or undefined to leave it empty.
  * @returns The URL of the class page, used to delete the class afterwards.
  */
 export async function createSubmission(
   page: Page,
   className: string,
+  studentName?: string,
 ): Promise<string> {
   await page.goto("/");
   await page.getByRole("button", { name: "New class" }).click();
@@ -30,6 +32,9 @@ export async function createSubmission(
   await page.waitForURL(/\/sessions\//);
 
   await page.getByRole("button", { name: "Add submission" }).click();
+  if (studentName) {
+    await page.getByLabel("Student name (optional)").fill(studentName);
+  }
   await page.getByRole("button", { name: "Create" }).click();
   await page.waitForURL(/\/submissions\//);
   return classUrl;

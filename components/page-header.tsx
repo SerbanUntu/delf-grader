@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Fragment } from "react";
+import { StudentNamesHelp } from "@/components/student-names-help";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -16,7 +17,7 @@ export type BreadcrumbEntry = {
 };
 
 /**
- * The header shown at the top of every page, with the breadcrumbs and the user menu.
+ * The header shown at the top of every page, with the breadcrumbs, the student names help button and the user menu.
  *
  * @param breadcrumbs The path to the current page, starting with "Classes". The last entry is the current page.
  */
@@ -63,7 +64,10 @@ export function PageHeader({
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <UserMenu />
+        <div className="flex shrink-0 items-center gap-3">
+          <StudentNamesHelp />
+          <UserMenu />
+        </div>
       </div>
     </header>
   );
