@@ -17,6 +17,7 @@ import { api } from "@/convex/_generated/api";
 import { useFeedbackLanguage } from "@/lib/feedback-language";
 import { defaultSessionName } from "@/lib/format";
 import { isGradingInputChanged } from "@/lib/grading";
+import { usePageTitle } from "@/lib/page-title";
 import {
   getStudentLabel,
   useStudentKeys,
@@ -32,6 +33,7 @@ import { SessionAnalytics } from "./session-analytics";
 export function SessionView({ sessionId }: { sessionId: string }) {
   const router = useRouter();
   const data = useQuery(api.sessions.get, { sessionId });
+  usePageTitle(data?.session.displayName);
   const submissions = useQuery(
     api.submissions.listBySession,
     data ? { sessionId: data.session._id } : "skip",

@@ -15,6 +15,7 @@ import { useFeedbackLanguage } from "@/lib/feedback-language";
 import { formatDate } from "@/lib/format";
 import { isGradingInputChanged } from "@/lib/grading";
 import { useLocalPages } from "@/lib/local-pages";
+import { usePageTitle } from "@/lib/page-title";
 import { getRubric } from "@/lib/rubrics";
 import {
   getCurrentStep,
@@ -37,6 +38,7 @@ import { UploadStep } from "./upload-step";
  */
 export function SubmissionView({ submissionId }: { submissionId: string }) {
   const data = useQuery(api.submissions.get, { submissionId });
+  usePageTitle(data?.submission.name);
   const updateExam = useMutation(api.submissions.updateExam);
   const language = useFeedbackLanguage();
   const localPages = useLocalPages(submissionId);

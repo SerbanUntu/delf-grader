@@ -18,7 +18,9 @@ import { SubmissionCard } from "@/components/submission-card";
 import { api } from "@/convex/_generated/api";
 import type { AnalyticsCriterionSummary } from "@/lib/analytics";
 import { formatPercent } from "@/lib/format";
+import { usePageTitle } from "@/lib/page-title";
 import { analyticsCriteria } from "@/lib/rubrics";
+import { unknownStudentLabel } from "@/lib/student-ids";
 import {
   getSameStudentIds,
   getStudentLabel,
@@ -46,6 +48,7 @@ export function StudentView({
 }) {
   const names = useStudentNames();
   const name = useStudentName(studentId);
+  usePageTitle(unknownStudentLabel(studentId));
   const data = useQuery(api.students.get, {
     classId,
     studentIds: getSameStudentIds(names, classId, studentId),

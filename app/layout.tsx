@@ -2,14 +2,33 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import {
+  pageTitleTemplate,
+  siteDescription,
+  siteName,
+  siteUrl,
+} from "@/lib/site";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
 
 export const metadata: Metadata = {
-  title: "DELF Grader",
-  description:
-    "Grade DELF Production écrite practice exams from handwritten answers.",
+  metadataBase: new URL(siteUrl),
+  applicationName: siteName,
+  title: { default: siteName, template: pageTitleTemplate },
+  description: siteDescription,
+  robots: { index: false, follow: false },
+  openGraph: {
+    type: "website",
+    siteName,
+    title: siteName,
+    description: siteDescription,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteName,
+    description: siteDescription,
+  },
 };
 
 export default function RootLayout({

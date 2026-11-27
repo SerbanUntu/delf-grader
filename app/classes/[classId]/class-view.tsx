@@ -21,6 +21,7 @@ import {
   formatDate,
   noStudentNamesHint,
 } from "@/lib/format";
+import { usePageTitle } from "@/lib/page-title";
 import {
   getStudentLabel,
   mergeSameStudents,
@@ -37,6 +38,7 @@ import { ClassAnalytics } from "./class-analytics";
 export function ClassView({ classId }: { classId: string }) {
   const router = useRouter();
   const schoolClass = useQuery(api.classes.get, { classId });
+  usePageTitle(schoolClass?.name);
   const sessions = useQuery(
     api.sessions.listByClass,
     schoolClass ? { classId: schoolClass._id } : "skip",
